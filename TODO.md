@@ -1,5 +1,0 @@
-- [ ] gui: Create a GUI using JavaFX
-- [ ] gpx: Add support for GPX 1.0
-- [ ] model: Enums toString should be written in lowercase
-- [ ] cli: Add support for Reader settings (group subtrails)
-- [ ] writers: Add possibility to export a trail as a route (i.e. no time)
