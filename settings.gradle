@@ -1,0 +1,11 @@
+include 'pinetrail-utils'
+include 'pinetrail-model'
+include 'pinetrail-api'
+include 'pinetrail-gpx'
+include 'pinetrail-cli'
+
+rootProject.name = 'Pinetrail'
+
+rootProject.children.each {
+    it.buildFileName = it.name + '.gradle' - 'pinetrail-'
+}

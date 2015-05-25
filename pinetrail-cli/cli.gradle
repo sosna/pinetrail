@@ -1,0 +1,12 @@
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'application'
+
+mainClassName = "ws.sosna.pinetrail.cli.Pinalyzr"
+
+dependencies {
+    compile project(':pinetrail-utils')
+    compile project(':pinetrail-model')
+    compile project(':pinetrail-api')
+    compile project(':pinetrail-gpx')
+    compile 'args4j:args4j:2.32'
+}

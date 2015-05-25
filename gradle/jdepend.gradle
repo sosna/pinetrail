@@ -1,0 +1,5 @@
+apply plugin: 'jdepend'
+
+jdepend {
+    ignoreFailures = true
+}

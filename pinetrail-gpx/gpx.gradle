@@ -1,0 +1,6 @@
+dependencies {
+    compile project(':pinetrail-utils')
+    compile project(':pinetrail-model')
+    compile project(':pinetrail-api')
+    compile 'ca.carleton.gcrc:nunaliit2-gpx-jaxb:2.2.3'
+}

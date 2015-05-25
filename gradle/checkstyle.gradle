@@ -1,0 +1,10 @@
+apply plugin: 'checkstyle'
+
+ext.checkstyleConfigDir = "$configDir/checkstyle"
+
+checkstyle {
+    toolVersion = '6.1.1'
+    configFile = new File(checkstyleConfigDir, 'sun_checks.xml')
+    ignoreFailures = true
+    showViolations = false
+}
