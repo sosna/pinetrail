@@ -1,4 +1,4 @@
-# Pinetrail
+# Pinetrail [![Build Status](https://travis-ci.org/sosna/pinetrail.svg?branch=master)](https://travis-ci.org/sosna/pinetrail)
 
 Pinetrail is a tool that sanitizes GPS log files by correcting the elevation
 data and removing outliers as well as idle points. In addition, it offers a
