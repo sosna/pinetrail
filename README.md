@@ -39,7 +39,7 @@ often rather good relative accuracy).
 
 In one case for example, my GPS device, configured to use the GPS-based
 altimeter, indicated, during a hike, a drop in elevation of 150 meters in
-approx. 15 seconds. I'm happy the fall only took place in my GPS logger
+approx. 15 seconds. I'm happy the fall only took place in my GPS logger's
 imagination ;-).
 
 In another case, the barometric altimeter reported a difference in elevation of
