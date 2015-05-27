@@ -27,6 +27,8 @@ import org.kohsuke.args4j.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ws.sosna.pinetrail.api.io.Formats;
+import ws.sosna.pinetrail.api.io.ReaderSettings;
+import ws.sosna.pinetrail.api.io.ReaderSettingsBuilder;
 import ws.sosna.pinetrail.api.io.Writer;
 import ws.sosna.pinetrail.api.io.WriterSettings;
 import ws.sosna.pinetrail.api.io.WriterSettingsBuilder;
@@ -51,10 +53,11 @@ final class Cleaner implements Runnable {
 
     @Option(name = "-h", aliases = "--help", usage = "Print this message")
     private boolean help = false;
-    private boolean isQuiet;
+    private boolean isQuiet = false;
     private boolean keepOutliers = false;
     private boolean keepIdlePoints = false;
     private boolean prettyPrinting = false;
+    private boolean groupSubTrails = false;
 
     Cleaner() {
         super();
@@ -174,6 +177,16 @@ final class Cleaner implements Runnable {
         pinetrail.setLevel(ch.qos.logback.classic.Level.ERROR);
     }
 
+    @Option(name = "-g", aliases = {"--group-subtrails"}, metaVar = "boolean",
+        usage = "Whether subtrails should be grouped into one trail. Certain "
+        + "formats allow intermediary groupings between the trail and the "
+        + "waypoints. Gpx for example has an additional level, called "
+        + "segment, between tracks and waypoints. If true, these "
+        + "intermediary levels will be merged into one trail.")
+    void groupSubTrails(final boolean flag) {
+        this.groupSubTrails = flag;
+    }
+
     @Override
     public void run() {
         if (null == inputFile) {
@@ -190,8 +203,11 @@ final class Cleaner implements Runnable {
     }
 
     private Results processJob(final Path path) {
+        final ReaderSettings settings = new ReaderSettingsBuilder().
+            groupSubTrails(groupSubTrails).build();
         final Set<Trail> trails
-            = new Gpx11Provider().newReader(Formats.GPX_1_1).apply(path);
+            = new Gpx11Provider().newReader(Formats.GPX_1_1)
+            .configure(settings).apply(path);
         return new Results(path, trails);
     }
 
