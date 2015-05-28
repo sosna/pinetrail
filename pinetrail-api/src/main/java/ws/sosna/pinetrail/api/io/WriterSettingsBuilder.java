@@ -26,6 +26,7 @@ public final class WriterSettingsBuilder {
     private boolean overwriteIfExists;
     private boolean writeOutliers;
     private boolean writeIdlePoints;
+    private boolean writeRoute;
 
     /**
      * Instantiates a new WriterSettingsBuilder.
@@ -36,6 +37,7 @@ public final class WriterSettingsBuilder {
         overwriteIfExists = true;
         writeOutliers = false;
         writeIdlePoints = false;
+        writeRoute = false;
     }
 
     /**
@@ -87,13 +89,27 @@ public final class WriterSettingsBuilder {
     }
 
     /**
+     * Returns the builder, with the writeRoute flag set.
+     *
+     * @param flag whether the trail should be written as an ordered collection
+     * of points with time information or as a route, i.e. an ordered
+     * collection of points leading to a destination.
+     *
+     * @return the builder with the updated writeRoute flag
+     */
+    public WriterSettingsBuilder writeRoute(final boolean flag) {
+        writeRoute = flag;
+        return this;
+    }
+
+    /**
      * Builds an immutable implementation of the WriterSettings interface.
      *
      * @return a WriterSettings instance.
      */
     public WriterSettings build() {
         return new WriterSettingsImpl(prettyPrinting, overwriteIfExists,
-            writeOutliers, writeIdlePoints);
+            writeOutliers, writeIdlePoints, writeRoute);
     }
 
     private static final class WriterSettingsImpl implements WriterSettings {
@@ -102,14 +118,17 @@ public final class WriterSettingsBuilder {
         private final boolean overwriteIfExists;
         private final boolean writeOutliers;
         private final boolean writeIdlePoints;
+        private final boolean writeRoute;
 
         WriterSettingsImpl(final boolean pretty, final boolean overwrite,
-            final boolean withOutliers, final boolean withInactive) {
+            final boolean withOutliers, final boolean withInactive,
+            final boolean asRoute) {
             super();
             prettyPrinting = pretty;
             overwriteIfExists = overwrite;
             writeIdlePoints = withInactive;
             writeOutliers = withOutliers;
+            writeRoute = asRoute;
         }
 
         /**
@@ -128,14 +147,28 @@ public final class WriterSettingsBuilder {
             return prettyPrinting;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public boolean writeOutliers() {
             return writeOutliers;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public boolean writeIdlePoints() {
             return writeIdlePoints;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean writeRoute() {
+            return writeRoute;
         }
     }
 }

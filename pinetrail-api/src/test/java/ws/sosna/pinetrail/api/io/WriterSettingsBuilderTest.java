@@ -74,4 +74,17 @@ public class WriterSettingsBuilderTest {
         instance.writeIdlePoints(true);
         assertTrue(instance.build().writeIdlePoints());
     }
+
+    @Test
+    public void writeRouteDefault() {
+        final WriterSettingsBuilder instance = new WriterSettingsBuilder();
+        assertFalse(instance.build().writeRoute());
+    }
+
+    @Test
+    public void writeRoute() {
+        final WriterSettingsBuilder instance = new WriterSettingsBuilder();
+        instance.writeRoute(true);
+        assertTrue(instance.build().writeRoute());
+    }
 }

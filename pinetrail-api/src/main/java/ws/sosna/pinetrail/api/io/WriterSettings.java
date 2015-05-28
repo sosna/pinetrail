@@ -54,4 +54,14 @@ public interface WriterSettings {
      * @return whether inactive points will be written to the output file
      */
     boolean writeIdlePoints();
+
+    /**
+     * Whether the trail should be written as an ordered collection of points,
+     * with time information (such as a track recorded by a GPS logger) or
+     * rather as a route (or itinerary), i.e. an ordered collection of points
+     * leading to a destination. Defaults to false.
+     *
+     * @return whether the trail should be written as route
+     */
+    boolean writeRoute();
 }
