@@ -102,8 +102,8 @@ final class PinetrailToGpx11Mapper {
         if (null != pt.getCoordinates().getElevation()) {
             waypoint.setEle(BigDecimal.valueOf(pt.getCoordinates().
                 getElevation()));
-            waypoint.setName(pt.getName());
         }
+        waypoint.setName(pt.getName());
         waypoint.setDesc(pt.getDescription());
         final GregorianCalendar gCalendar = new GregorianCalendar();
         gCalendar.setTime(new Date(pt.getTime().toEpochMilli()));
