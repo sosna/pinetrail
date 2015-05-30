@@ -101,7 +101,10 @@ final class PinetrailToGpx11Mapper {
         final WptType waypoint = new WptType();
         waypoint.setLat(BigDecimal.valueOf(pt.getCoordinates().getLatitude()));
         waypoint.setLon(BigDecimal.valueOf(pt.getCoordinates().getLongitude()));
-        waypoint.setEle(BigDecimal.valueOf(pt.getCoordinates().getElevation()));
+        if (null != pt.getCoordinates().getElevation()) {
+            waypoint.setEle(BigDecimal.valueOf(pt.getCoordinates().
+                getElevation()));
+        }
         waypoint.setName(pt.getName());
         waypoint.setDesc(pt.getDescription());
         if (!(settings.writeRoute())) {
