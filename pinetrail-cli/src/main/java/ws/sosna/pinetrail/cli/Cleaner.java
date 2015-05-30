@@ -154,7 +154,12 @@ final class Cleaner implements Runnable {
         final ch.qos.logback.classic.Logger root
             = (ch.qos.logback.classic.Logger) LoggerFactory
             .getLogger(Logger.ROOT_LOGGER_NAME);
-        root.setLevel(ch.qos.logback.classic.Level.ALL);
+        root.setLevel(ch.qos.logback.classic.Level.DEBUG);
+
+        final ch.qos.logback.classic.Logger pinetrail
+            = (ch.qos.logback.classic.Logger) LoggerFactory
+            .getLogger("ws.sosna.pinetrail");
+        pinetrail.setLevel(ch.qos.logback.classic.Level.DEBUG);
     }
 
     @Option(name = "-p", aliases = {"--pretty-printing"}, metaVar = "boolean",
