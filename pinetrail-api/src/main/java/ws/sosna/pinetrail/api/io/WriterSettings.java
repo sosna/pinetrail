@@ -56,12 +56,11 @@ public interface WriterSettings {
     boolean writeIdlePoints();
 
     /**
-     * Whether the trail should be written as an ordered collection of points,
-     * with time information (such as a track recorded by a GPS logger) or
-     * rather as a route (or itinerary), i.e. an ordered collection of points
-     * leading to a destination. Defaults to false.
+     * Whether the trail should contain time information. Removing time
+     * information can be useful, for example, when sharing an itinerary.
+     * Defaults to false.
      *
-     * @return whether the trail should be written as route
+     * @return whether the trail should contain time information
      */
     boolean writeRoute();
 }
