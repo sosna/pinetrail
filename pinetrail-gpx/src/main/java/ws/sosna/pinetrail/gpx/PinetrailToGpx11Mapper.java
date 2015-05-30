@@ -102,11 +102,13 @@ final class PinetrailToGpx11Mapper {
         waypoint.setEle(BigDecimal.valueOf(pt.getCoordinates().getElevation()));
         waypoint.setName(pt.getName());
         waypoint.setDesc(pt.getDescription());
-        final GregorianCalendar gCalendar = new GregorianCalendar();
-        gCalendar.setTime(new Date(pt.getTime().toEpochMilli()));
-        final XMLGregorianCalendar xmlCalendar = DatatypeFactory.newInstance().
-            newXMLGregorianCalendar(gCalendar);
-        waypoint.setTime(xmlCalendar);
+        if (!(settings.writeRoute())) {
+            final GregorianCalendar gCalendar = new GregorianCalendar();
+            gCalendar.setTime(new Date(pt.getTime().toEpochMilli()));
+            final XMLGregorianCalendar xmlCalendar = DatatypeFactory.
+                newInstance().newXMLGregorianCalendar(gCalendar);
+            waypoint.setTime(xmlCalendar);
+        }
         if (null != pt.getType()) {
             waypoint.setType(pt.getType().toString());
         }

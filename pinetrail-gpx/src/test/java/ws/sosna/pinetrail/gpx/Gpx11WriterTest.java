@@ -15,15 +15,24 @@
  */
 package ws.sosna.pinetrail.gpx;
 
+import com.topografix.gpx._1._1.GpxType;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.transform.stream.StreamSource;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import ws.sosna.pinetrail.api.io.Reader;
@@ -266,5 +275,41 @@ public class Gpx11WriterTest {
             getDefault().getPath(".",
                 "src/test/resources/2014-05-18_Wispertal.out.gpx");
         writer.accept(trail, path);
+    }
+
+    @Test
+    public void writeRoute() {
+        final Reader reader = new Gpx11Reader();
+        final Set<Trail> trails = reader.apply(FileSystems.
+            getDefault().getPath(".",
+                "src/test/resources/2014-05-18_Wispertal_Full.gpx"));
+        assertEquals(1, trails.size());
+        final Trail trail = (Trail) trails.toArray()[0];
+
+        final Writer writer = new Gpx11Writer();
+        final Path path = FileSystems.
+            getDefault().getPath(".",
+                "src/test/resources/2014-05-18_Wispertal.route.gpx");
+        final WriterSettings settings = new WriterSettingsBuilder().writeRoute(
+            true).build();
+        writer.configure(settings).accept(trail, path);
+
+        try (final BufferedReader routeReader
+            = Files.newBufferedReader(path)) {
+            final Unmarshaller u = GpxJaxbUtils.INSTANCE.getGpx11Context().
+                createUnmarshaller();
+            u.setSchema(GpxJaxbUtils.INSTANCE.getGpx11Schema());
+            final Set<String> validationIssues = new LinkedHashSet<>();
+            u.setEventHandler(event -> validationIssues.add(event.toString()));
+            final JAXBElement<GpxType> root = u.unmarshal(new StreamSource(
+                routeReader), GpxType.class);
+            if (!validationIssues.isEmpty()) {
+                fail("Found validation error");
+            }
+        } catch (final JAXBException e) {
+            fail("Received unexpected JAXBException");
+        } catch (final IOException e) {
+            fail("Received unexpected IOException");
+        }
     }
 }
