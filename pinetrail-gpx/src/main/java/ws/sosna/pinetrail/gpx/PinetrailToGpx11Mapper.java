@@ -25,6 +25,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -105,11 +107,13 @@ final class PinetrailToGpx11Mapper {
         }
         waypoint.setName(pt.getName());
         waypoint.setDesc(pt.getDescription());
-        final GregorianCalendar gCalendar = new GregorianCalendar();
-        gCalendar.setTime(new Date(pt.getTime().toEpochMilli()));
-        final XMLGregorianCalendar xmlCalendar = DatatypeFactory.newInstance().
-            newXMLGregorianCalendar(gCalendar);
-        waypoint.setTime(xmlCalendar);
+        if (!(settings.writeRoute())) {
+            final GregorianCalendar gCalendar = new GregorianCalendar();
+            gCalendar.setTime(new Date(pt.getTime().toEpochMilli()));
+            final XMLGregorianCalendar xmlCalendar = DatatypeFactory.
+                newInstance().newXMLGregorianCalendar(gCalendar);
+            waypoint.setTime(xmlCalendar);
+        }
         if (null != pt.getType()) {
             waypoint.setType(pt.getType().toString());
         }
@@ -137,18 +141,19 @@ final class PinetrailToGpx11Mapper {
 
     private Set<Waypoint> handleOutliers(final Trail trail) {
         final Set<Waypoint> outliers = getOutliers(trail);
-        final Set<Waypoint> points = new LinkedHashSet<>();
+        final SortedSet<Waypoint> points = new TreeSet<>();
         if (settings.writeOutliers()) {
             points.addAll(trail.getWaypoints());
         } else {
-            points.addAll(trail.getWaypoints().stream().filter(
-                item -> !(outliers.contains(item))).collect(Collectors.toSet()));
+            points.addAll(trail.getWaypoints().stream()
+                .filter(item -> !(outliers.contains(item)))
+                .collect(Collectors.toSet()));
         }
         return points;
     }
 
     private Set<Waypoint> handleIdlePoints(final Set<Waypoint> input) {
-        final Set<Waypoint> points = new LinkedHashSet<>();
+        final SortedSet<Waypoint> points = new TreeSet<>();
         if (settings.writeIdlePoints()) {
             points.addAll(input);
         } else {

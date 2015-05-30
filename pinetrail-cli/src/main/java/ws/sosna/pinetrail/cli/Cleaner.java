@@ -58,6 +58,7 @@ final class Cleaner implements Runnable {
     private boolean keepIdlePoints = false;
     private boolean prettyPrinting = false;
     private boolean groupSubTrails = false;
+    private boolean writeRoute = false;
 
     Cleaner() {
         super();
@@ -187,6 +188,14 @@ final class Cleaner implements Runnable {
         this.groupSubTrails = flag;
     }
 
+    @Option(name = "-rt", aliases = {"--route"}, metaVar = "boolean",
+        usage = "Whether the trail should contain time information. Removing "
+            + "time information can be useful, for example, when sharing an "
+            + "itinerary. Defaults to false.")
+    void writeRoute(final boolean flag) {
+        this.writeRoute = flag;
+    }
+
     @Override
     public void run() {
         if (null == inputFile) {
@@ -216,7 +225,7 @@ final class Cleaner implements Runnable {
             = Writers.INSTANCE.newWriter(Formats.GPX_1_1);
         final WriterSettings settings = new WriterSettingsBuilder().
             writeIdlePoints(keepIdlePoints).writeOutliers(keepOutliers).
-            prettyPrinting(prettyPrinting).build();
+            prettyPrinting(prettyPrinting).writeRoute(writeRoute).build();
         writer.configure(settings);
         int counter = results.trails.size() > 1 ? 1 : 0;
         for (final Trail trail : results.trails) {

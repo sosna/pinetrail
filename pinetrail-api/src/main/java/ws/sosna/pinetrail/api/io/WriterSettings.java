@@ -54,4 +54,13 @@ public interface WriterSettings {
      * @return whether inactive points will be written to the output file
      */
     boolean writeIdlePoints();
+
+    /**
+     * Whether the trail should contain time information. Removing time
+     * information can be useful, for example, when sharing an itinerary.
+     * Defaults to false.
+     *
+     * @return whether the trail should contain time information
+     */
+    boolean writeRoute();
 }

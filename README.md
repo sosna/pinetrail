@@ -72,10 +72,13 @@ during one of my hike was 25km/h, which is a bit much for someone who was merely
 walking ;-).
 
 Pinetrail uses statistical formulas to identify and remove outliers from the GPS
-log (although there is an option to preserve these, if you so wish).
+log (although there is an option to preserve these, if you so wish). In order to
+preserve the outliers, use the `-ro` flag (see section *Usage* below).
 
-In order to preserve the outliers, use the `-ro` flag (see section *Usage*
-below).
+Once outliers have been removed, Pinetrail will perform various calculations
+again and try to identify new outliers. By default, 3 attempts will be made to
+identify all outliers but you can set the desired number of iterations using
+the `-i` flag.
 
 ### Removing idle points
 
