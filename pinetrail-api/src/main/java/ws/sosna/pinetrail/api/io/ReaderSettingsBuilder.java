@@ -31,6 +31,8 @@ import ws.sosna.pinetrail.utils.logging.StatusCodes;
 public final class ReaderSettingsBuilder {
 
     private boolean groupSubTrails;
+    private boolean crossBorder;
+
     private static final Logger LOGGER
         = LoggerFactory.getLogger(ReaderSettings.class);
 
@@ -66,24 +68,46 @@ public final class ReaderSettingsBuilder {
     }
 
     /**
+     * Whether the trail crosses country borders.
+     *
+     * <p>
+     * If true, multiple points will be selected for reverse geocoding.
+     *
+     * <p>
+     * Defaults to false (for performance reasons).
+     *
+     * @param crossBorder whether the trail crosses country borders
+     *
+     * @return the builder with an updated value for crossBorders.
+     */
+    public ReaderSettingsBuilder crossBorder(final boolean crossBorder) {
+        this.crossBorder = crossBorder;
+        return this;
+    }
+
+    /**
      * Builds a new immutable instance of the {@code ReaderWork} interface.
      *
      * @return a new immutable instance of the ReaderWork interface
      */
     public ReaderSettings build() {
-        return new ReaderWorkImpl(groupSubTrails);
+        return new ReaderWorkImpl(groupSubTrails, crossBorder);
     }
 
     private static final class ReaderWorkImpl implements ReaderSettings {
 
         private final boolean groupSubTrails;
+        private final boolean crossBorder;
 
-        ReaderWorkImpl(final boolean groupSubTrails) {
+        ReaderWorkImpl(final boolean groupSubTrails,
+            final boolean crossBorder) {
             super();
             this.groupSubTrails = groupSubTrails;
+            this.crossBorder = crossBorder;
             LOGGER.debug(Markers.IO.getMarker(), "{} | {} | Built a new "
-                + "ReaderWork. Group subtrails: {}",
-                Actions.CREATE, StatusCodes.OK.getCode(), groupSubTrails);
+                + "ReaderWork. Group subtrails: {}. Cross-borders: {}",
+                Actions.CREATE, StatusCodes.OK.getCode(), groupSubTrails,
+                crossBorder);
         }
 
         /**
@@ -94,9 +118,18 @@ public final class ReaderSettingsBuilder {
             return groupSubTrails;
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean crossBorder() {
+            return crossBorder;
+        }
+
         @Override
         public String toString() {
-            return "ReaderWorkImpl{groupSubTrails=" + groupSubTrails + '}';
+            return "ReaderWorkImpl{groupSubTrails=" + groupSubTrails
+                + "crossBorder=" + crossBorder + '}';
         }
     }
 }
