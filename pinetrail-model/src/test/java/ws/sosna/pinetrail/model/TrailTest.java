@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.prefs.Preferences;
 import javax.validation.ValidationException;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -40,6 +41,9 @@ public class TrailTest extends DescribableTest {
 
     @Before
     public void setup() {
+        Preferences.userRoot().node(
+            "ws.sosna.pinetrail.model.Trail").put("crossBorder",
+                Boolean.toString(false));
         final Waypoint point = newWaypoint(Instant.EPOCH,
                 newCoordinates(8.789654, 40.6784356, 393.31), "", "tmp",
                 new LinkedHashSet<>());
