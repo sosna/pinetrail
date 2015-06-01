@@ -59,6 +59,7 @@ final class Cleaner implements Runnable {
     private boolean prettyPrinting = false;
     private boolean groupSubTrails = false;
     private boolean writeRoute = false;
+    private boolean crossBorder = false;
 
     Cleaner() {
         super();
@@ -201,6 +202,14 @@ final class Cleaner implements Runnable {
         this.writeRoute = flag;
     }
 
+    @Option(name = "-x", aliases = {"--cross-border"}, metaVar = "boolean",
+        usage = "Whether the trail crosses country borders. If true, multiple "
+            + "points will be selected for reverse geocoding. Defaults to "
+            + "false for performance reasons.")
+    void crossBorder(final boolean flag) {
+        this.crossBorder = flag;
+    }
+
     @Override
     public void run() {
         if (null == inputFile) {
@@ -210,6 +219,9 @@ final class Cleaner implements Runnable {
         Preferences.userRoot().node(
             "ws.sosna.pinetrail.model.Trail").put("keepOutliers",
                 Boolean.toString(keepOutliers));
+        Preferences.userRoot().node(
+            "ws.sosna.pinetrail.model.Trail").put("crossBorder",
+                Boolean.toString(crossBorder));
         final Set<Path> files = getInputFiles(FileSystems.getDefault().
             getPath(".", inputFile));
         files.parallelStream()
@@ -218,7 +230,7 @@ final class Cleaner implements Runnable {
 
     private Results processJob(final Path path) {
         final ReaderSettings settings = new ReaderSettingsBuilder().
-            groupSubTrails(groupSubTrails).build();
+            groupSubTrails(groupSubTrails).crossBorder(crossBorder).build();
         final Set<Trail> trails
             = new Gpx11Provider().newReader(Formats.GPX_1_1)
             .configure(settings).apply(path);

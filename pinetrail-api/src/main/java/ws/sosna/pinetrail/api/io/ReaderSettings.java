@@ -35,9 +35,22 @@ public interface ReaderSettings {
      * If false, each of these levels will appear as a separate {@code Trail}.
      *
      * <p>
-     * Defauls to false.
+     * Defaults to false.
      *
      * @return whether subtrails should be grouped
      */
     boolean groupSubTrails();
+
+    /**
+     * Whether the trail crosses country borders.
+     *
+     * <p>
+     * If true, multiple points will be selected for reverse geocoding.
+     *
+     * <p>
+     * Defaults to false (for performance reasons).
+     *
+     * @return whether the trail crosses country borders
+     */
+    boolean crossBorder();
 }
