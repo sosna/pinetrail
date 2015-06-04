@@ -13,8 +13,11 @@ MapQuest, which itself is based on the excellent Nominatim tool provided by
 The [Movable Type web site](http://www.movable-type.co.uk/) from Chris Veness is
 a trove of high quality information and code for geodesic distance calculations.
 
-Special thanks also go to Steve Fry and Dick Holley, for their formulæ to
+Thank you also go to Steve Fry and Dick Holley, for their formulæ to
 estimate the difficulty of a trail depending on the hiker's level.
+
+Special thanks also to [@Tzaphkiel](https://github.com/Tzaphkiel) for the
+additional test cases and his always highly appreciated code reviews!
 
 Last but not least, this project relies on open source Java libraries and I
 would like to express my gratitude to their authors for making their high

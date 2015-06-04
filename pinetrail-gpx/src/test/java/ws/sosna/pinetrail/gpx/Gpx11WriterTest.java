@@ -32,6 +32,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -263,17 +264,15 @@ public class Gpx11WriterTest {
     @Test(expected = ExecutionError.class)
     public void attemptToOverwriteFile() throws InterruptedException {
         final Reader reader = new Gpx11Reader();
-        final Set<Trail> trails = reader.apply(FileSystems.
+        final Path path = FileSystems.
             getDefault().getPath(".",
-                "src/test/resources/2014-05-18_Wispertal_Full.gpx"));
+                "src/test/resources/2014-05-18_Wispertal_Full.gpx");
+        final Set<Trail> trails = reader.apply(path);
         assertEquals(1, trails.size());
         final Trail trail = (Trail) trails.toArray()[0];
         final WriterSettings settings
             = new WriterSettingsBuilder().overwriteIfExists(false).build();
         final Writer writer = new Gpx11Writer().configure(settings);
-        final Path path = FileSystems.
-            getDefault().getPath(".",
-                "src/test/resources/2014-05-18_Wispertal.out.gpx");
         writer.accept(trail, path);
     }
 
@@ -310,6 +309,23 @@ public class Gpx11WriterTest {
             fail("Received unexpected JAXBException");
         } catch (final IOException e) {
             fail("Received unexpected IOException");
+        }
+    }
+
+    @Test
+    public void elevationForLongRoute() {
+        final String key = Preferences.userRoot().node(
+            "ws.sosna.pinetrail.UserSettings").get("mapQuestKey", null);
+        if (null != key) {
+            final Reader reader = new Gpx11Reader();
+            final Set<Trail> trails = reader.apply(FileSystems.
+                getDefault().getPath(".",
+                    "src/test/resources/long_route.gpx"));
+            assertEquals(1, trails.size());
+            final Trail trail = (Trail) trails.toArray()[0];
+            for (final Waypoint pt : trail.getWaypoints()) {
+                assertNotNull(pt.getCoordinates().getElevation());
+            }
         }
     }
 }
