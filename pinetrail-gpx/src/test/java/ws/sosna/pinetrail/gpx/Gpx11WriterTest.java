@@ -316,14 +316,18 @@ public class Gpx11WriterTest {
 
     @Test
     public void elevationForLongRoute() {
-        final Reader reader = new Gpx11Reader();
-        final Set<Trail> trails = reader.apply(FileSystems.
-            getDefault().getPath(".",
-                "src/test/resources/long_route.gpx"));
-        assertEquals(1, trails.size());
-        final Trail trail = (Trail) trails.toArray()[0];
-        for (final Waypoint pt : trail.getWaypoints()) {
-            assertNotNull(pt.getCoordinates().getElevation());
+        final String key = Preferences.userRoot().node(
+            "ws.sosna.pinetrail.UserSettings").get("mapQuestKey", null);
+        if (null != key) {
+            final Reader reader = new Gpx11Reader();
+            final Set<Trail> trails = reader.apply(FileSystems.
+                getDefault().getPath(".",
+                    "src/test/resources/long_route.gpx"));
+            assertEquals(1, trails.size());
+            final Trail trail = (Trail) trails.toArray()[0];
+            for (final Waypoint pt : trail.getWaypoints()) {
+                assertNotNull(pt.getCoordinates().getElevation());
+            }
         }
     }
 }
