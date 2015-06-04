@@ -74,10 +74,10 @@ final class TrailInfoWriter {
         if (Activity.HIKING == trail.getActivity()) {
             bld.append("\nDifficulty level: ").append(trail.
                 getDifficultyRating());
+            bld.append(" (");
+            bld.append(Level.getLevelFromRating(trail.getDifficultyRating()));
+            bld.append(")");
         }
-        bld.append(" (");
-        bld.append(Level.getLevelFromRating(trail.getDifficultyRating()));
-        bld.append(")");
         bld.append("\nCountries crossed by the trail: ").
             append(trail.getCountries());
         bld.append("\n--- Time ---");
