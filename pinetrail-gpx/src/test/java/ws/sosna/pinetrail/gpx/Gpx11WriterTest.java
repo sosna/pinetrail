@@ -32,6 +32,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -310,6 +311,19 @@ public class Gpx11WriterTest {
             fail("Received unexpected JAXBException");
         } catch (final IOException e) {
             fail("Received unexpected IOException");
+        }
+    }
+
+    @Test
+    public void elevationForLongRoute() {
+        final Reader reader = new Gpx11Reader();
+        final Set<Trail> trails = reader.apply(FileSystems.
+            getDefault().getPath(".",
+                "src/test/resources/long_route.gpx"));
+        assertEquals(1, trails.size());
+        final Trail trail = (Trail) trails.toArray()[0];
+        for (final Waypoint pt : trail.getWaypoints()) {
+            assertNotNull(pt.getCoordinates().getElevation());
         }
     }
 }

@@ -23,6 +23,7 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -55,8 +56,7 @@ import ws.sosna.pinetrail.utils.logging.StatusCodes;
  *
  * @author Xavier Sosnovsky
  */
-enum ElevationFixer implements Function<SortedSet<Waypoint>,
-    SortedSet<Waypoint>> {
+enum ElevationFixer implements Function<SortedSet<Waypoint>, SortedSet<Waypoint>> {
 
     /**
      * Singleton that returns an instance of the ElevationFixer.
@@ -81,13 +81,13 @@ enum ElevationFixer implements Function<SortedSet<Waypoint>,
     @Override
     public SortedSet<Waypoint> apply(final SortedSet<Waypoint> points) {
         final String key = Preferences.userRoot().node(
-                "ws.sosna.pinetrail.UserSettings").get("mapQuestKey", "");
+            "ws.sosna.pinetrail.UserSettings").get("mapQuestKey", "");
         final SortedSet<Waypoint> response = new TreeSet<>();
         if (key.isEmpty()) {
             LOGGER.warn(Markers.MODEL.getMarker(), "{} | {} | {}",
                 Actions.ANALYSE, StatusCodes.NOT_FOUND.getCode(),
                 "MapQuest key not found: Elevation data will not be"
-                    + " corrected.");
+                + " corrected.");
             response.addAll(points);
         } else if (points.isEmpty()) {
             LOGGER.info(Markers.MODEL.getMarker(), "{} | {} | {}",
@@ -100,15 +100,39 @@ enum ElevationFixer implements Function<SortedSet<Waypoint>,
                     = processResponse(parseXml(askMapQuest(input, key)));
                 response.addAll(replaceElevation(points, elevations));
                 LOGGER.info(Markers.MODEL.getMarker(), "{} | {} | {}",
-                Actions.ANALYSE, StatusCodes.OK.getCode(),
-                "Successfully retrieved elevation data with MapQuest");
+                    Actions.ANALYSE, StatusCodes.OK.getCode(),
+                    "Successfully retrieved elevation data with MapQuest");
             } catch (final ExecutionError e) {
-                LOGGER.warn(Markers.MODEL.getMarker(), "{} | {} | {}",
-                Actions.ANALYSE, StatusCodes.INTERNAL_ERROR.getCode(),
-                "There was an error getting elevation data from MapQuest. "
-                    + "Initial elevation data will be used instead. The error "
-                    + "was: " + e.getMessage());
-                response.addAll(points);
+                if (StatusCodes.NOT_ACCEPTABLE == e.getErrorCode()) {
+                    final Set<SortedSet<Waypoint>> slices
+                        = new LinkedHashSet<>();
+                    final int idx = Math.round(points.size() / 3);
+                    LOGGER.info(Markers.MODEL.getMarker(), "{} | {} | {}.",
+                        Actions.ANALYSE, StatusCodes.NOT_ACCEPTABLE.
+                        getCode(), "Route is too long for MapQuest. It will be "
+                            + " splitted and resubmitted again.");
+                    final List<Waypoint> ls = new ArrayList<>(points);
+                    slices.add(new TreeSet(ls.subList(0, idx)));
+                    slices.add(new TreeSet(ls.subList(idx, idx * 2)));
+                    slices.add(new TreeSet(ls.subList(idx * 2, points.size())));
+                    for (final SortedSet<Waypoint> slice : slices) {
+                        try {
+                            Thread.sleep(1500);
+                        } catch (final InterruptedException ex) {
+                            throw new ExecutionError(ex.getMessage(),
+                                ex.getCause(), Markers.NETWORK.getMarker(),
+                                Actions.GET, StatusCodes.INTERNAL_ERROR);
+                        }
+                        response.addAll(apply(slice));
+                    }
+                } else {
+                    LOGGER.warn(Markers.MODEL.getMarker(), "{} | {} | {}",
+                        Actions.ANALYSE, StatusCodes.INTERNAL_ERROR.getCode(),
+                        "There was an error getting elevation data from "
+                        + "MapQuest. Initial elevation data will be used "
+                        + "instead. The error was: " + e.getMessage());
+                    response.addAll(points);
+                }
             }
         }
         return response;
@@ -121,8 +145,8 @@ enum ElevationFixer implements Function<SortedSet<Waypoint>,
         final String key) {
         final String url
             = "http://open.mapquestapi.com/elevation/v1/profile?key=" + key;
-        final String params =
-            "outFormat=xml"
+        final String params
+            = "outFormat=xml"
             + "&shapeFormat=cmp6"
             + "&useFilter=true"
             + "&outShapeFormat=none"
@@ -142,11 +166,14 @@ enum ElevationFixer implements Function<SortedSet<Waypoint>,
             conn.setRequestMethod("POST");
             conn.setDoOutput(true);
             conn.setInstanceFollowRedirects(false);
-            conn.setRequestProperty( "Content-Type", "application/x-www-form-urlencoded");
-            conn.setRequestProperty( "charset", "utf-8");
-            conn.setRequestProperty( "Content-Length", Integer.toString( postDataLength ));
-            conn.setUseCaches( false );
-            try (DataOutputStream wr = new DataOutputStream(conn.getOutputStream())) {
+            conn.setRequestProperty("Content-Type",
+                "application/x-www-form-urlencoded");
+            conn.setRequestProperty("charset", "utf-8");
+            conn.setRequestProperty("Content-Length", Integer.toString(
+                postDataLength));
+            conn.setUseCaches(false);
+            try (DataOutputStream wr = new DataOutputStream(conn.
+                getOutputStream())) {
                 wr.write(postData);
                 wr.flush();
             }
@@ -204,9 +231,26 @@ enum ElevationFixer implements Function<SortedSet<Waypoint>,
             }
         }
         if (0 == elevations.size()) {
-            throw new ExecutionError("Could not find elevation data in the"
-                + " response from MapQuest.", null, Markers.MODEL.
-                getMarker(), Actions.GET, StatusCodes.NOT_FOUND);
+            final NodeList eList
+                = xmlDocument.getElementsByTagName("message");
+            for (int temp = 0; temp < eList.getLength(); temp++) {
+                final Node nNode = eList.item(temp);
+                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                    final Element eElement = (Element) nNode;
+                    final String msg = eElement.getTextContent();
+                    if (-1 < msg.indexOf("maximum allowed distance")) {
+                        throw new ExecutionError("Route is too long and need "
+                            + "to be splitted", null,
+                            Markers.MODEL.getMarker(), Actions.GET,
+                            StatusCodes.NOT_ACCEPTABLE);
+                    } else {
+                        throw new ExecutionError("Could not find elevation "
+                            + "data in the response from MapQuest.", null,
+                            Markers.MODEL.getMarker(), Actions.GET,
+                            StatusCodes.NOT_FOUND);
+                    }
+                }
+            }
         }
         return elevations;
     }
