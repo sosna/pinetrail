@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Xavier Sosnovsky <xso@sosna.ws>
+ * Copyright (c) 2015, Xavier Sosnovsky <xso@sosna.ws>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,7 @@
  */
 package ws.sosna.pinetrail.gpx;
 
-import com.topografix.gpx._1._1.GpxType;
+import com.topografix.gpx._1._0.Gpx;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import javax.xml.XMLConstants;
@@ -32,7 +32,7 @@ import ws.sosna.pinetrail.utils.logging.Markers;
 import ws.sosna.pinetrail.utils.logging.StatusCodes;
 
 /**
- * Offers JAXB resources to be shared among threads.
+ * Offers Gpx 1.0 JAXB resources to be shared among threads.
  *
  * <p>
  * Some resources like a JAXB context or XML schemas are expensive to create
@@ -41,28 +41,28 @@ import ws.sosna.pinetrail.utils.logging.StatusCodes;
  *
  * @author Xavier Sosnovsky
  */
-enum Gpx11JaxbUtils {
+enum Gpx10JaxbUtils {
 
     /**
-     * Singleton instance of GpxJaxbUtils readers.
+     * Singleton instance of Gpx10JaxbUtils readers.
      */
     INSTANCE;
 
-    private static final JAXBContext GPX11_CONTEXT;
-    private static final Schema GPX11_SCHEMA;
+    private static final JAXBContext GPX10_CONTEXT;
+    private static final Schema GPX10_SCHEMA;
     private static final Logger LOGGER;
     private static final ResourceBundle LOG_MESSAGES;
 
     static {
-        LOGGER = LoggerFactory.getLogger(Gpx11JaxbUtils.class);
+        LOGGER = LoggerFactory.getLogger(Gpx10JaxbUtils.class);
         LOG_MESSAGES = ResourceBundle.getBundle("GpxLogMessages",
             Locale.getDefault());
         try {
-            GPX11_CONTEXT = JAXBContext.newInstance(GpxType.class);
+            GPX10_CONTEXT = JAXBContext.newInstance(Gpx.class);
             final SchemaFactory sf
                 = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            GPX11_SCHEMA = sf.newSchema(Gpx11JaxbUtils.class.getClassLoader().
-                getResource("gpx.1_1.xsd"));
+            GPX10_SCHEMA = sf.newSchema(Gpx10JaxbUtils.class.getClassLoader().
+                getResource("gpx.1_0.xsd"));
             LOGGER.info(Markers.CONFIG.getMarker(), "{} | {} | {}.",
                 Actions.CREATE, StatusCodes.OK.getCode(), LOG_MESSAGES.
                 getString("Config.CreatingContext"));
@@ -78,20 +78,20 @@ enum Gpx11JaxbUtils {
     }
 
     /**
-     * Gets the JAXBContext for GPX version 1.1.
+     * Gets the JAXBContext for GPX version 1.0.
      *
-     * @return the JAXBContext for GPX version 1.1
+     * @return the JAXBContext for GPX version 1.0
      */
-    public JAXBContext getGpx11Context() {
-        return GPX11_CONTEXT;
+    public JAXBContext getGpx10Context() {
+        return GPX10_CONTEXT;
     }
 
     /**
-     * Gets the schema for GPX version 1.1.
+     * Gets the schema for GPX version 1.0.
      *
-     * @return the schema for GPX version 1.1
+     * @return the schema for GPX version 1.0
      */
-    public Schema getGpx11Schema() {
-        return GPX11_SCHEMA;
+    public Schema getGpx10Schema() {
+        return GPX10_SCHEMA;
     }
 }

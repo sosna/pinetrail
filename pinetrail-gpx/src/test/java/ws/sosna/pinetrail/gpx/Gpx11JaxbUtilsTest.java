@@ -25,7 +25,7 @@ import org.junit.BeforeClass;
 /**
  * @author Xavier Sosnovsky
  */
-public class GpxJaxbUtilsTest {
+public class Gpx11JaxbUtilsTest {
     
     @BeforeClass
     public static void init() {

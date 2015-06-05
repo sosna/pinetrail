@@ -32,7 +32,7 @@ import ws.sosna.pinetrail.utils.logging.Markers;
 import ws.sosna.pinetrail.utils.logging.StatusCodes;
 
 /**
- * Offers JAXB resources to be shared among threads.
+ * Offers Gpx 11 JAXB resources to be shared among threads.
  *
  * <p>
  * Some resources like a JAXB context or XML schemas are expensive to create
@@ -44,7 +44,7 @@ import ws.sosna.pinetrail.utils.logging.StatusCodes;
 enum Gpx11JaxbUtils {
 
     /**
-     * Singleton instance of GpxJaxbUtils readers.
+     * Singleton instance of Gpx11JaxbUtils readers.
      */
     INSTANCE;
 
