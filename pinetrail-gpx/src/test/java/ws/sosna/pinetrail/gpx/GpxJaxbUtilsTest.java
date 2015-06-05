@@ -35,16 +35,16 @@ public class GpxJaxbUtilsTest {
     @Test
     public void getGpx11Context() {
         final JAXBContext context1 =
-            GpxJaxbUtils.valueOf("INSTANCE").getGpx11Context();
-        final JAXBContext context2 = GpxJaxbUtils.INSTANCE.getGpx11Context();
+            Gpx11JaxbUtils.valueOf("INSTANCE").getGpx11Context();
+        final JAXBContext context2 = Gpx11JaxbUtils.INSTANCE.getGpx11Context();
         assertNotNull(context1);
         assertSame(context1, context2);
     }
 
     @Test
     public void testGetGpx11Schema() {
-        final Schema schema1 = GpxJaxbUtils.INSTANCE.getGpx11Schema();
-        final Schema schema2 = GpxJaxbUtils.INSTANCE.getGpx11Schema();
+        final Schema schema1 = Gpx11JaxbUtils.INSTANCE.getGpx11Schema();
+        final Schema schema2 = Gpx11JaxbUtils.INSTANCE.getGpx11Schema();
         assertNotNull(schema1);
         assertSame(schema1, schema2);
     }

@@ -41,7 +41,7 @@ import ws.sosna.pinetrail.utils.logging.StatusCodes;
  *
  * @author Xavier Sosnovsky
  */
-enum GpxJaxbUtils {
+enum Gpx11JaxbUtils {
 
     /**
      * Singleton instance of GpxJaxbUtils readers.
@@ -54,14 +54,14 @@ enum GpxJaxbUtils {
     private static final ResourceBundle LOG_MESSAGES;
 
     static {
-        LOGGER = LoggerFactory.getLogger(GpxJaxbUtils.class);
+        LOGGER = LoggerFactory.getLogger(Gpx11JaxbUtils.class);
         LOG_MESSAGES = ResourceBundle.getBundle("GpxLogMessages",
             Locale.getDefault());
         try {
             GPX11_CONTEXT = JAXBContext.newInstance(GpxType.class);
             final SchemaFactory sf
                 = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            GPX11_SCHEMA = sf.newSchema(GpxJaxbUtils.class.getClassLoader().
+            GPX11_SCHEMA = sf.newSchema(Gpx11JaxbUtils.class.getClassLoader().
                 getResource("gpx.1_1.xsd"));
             LOGGER.info(Markers.CONFIG.getMarker(), "{} | {} | {}.",
                 Actions.CREATE, StatusCodes.OK.getCode(), LOG_MESSAGES.

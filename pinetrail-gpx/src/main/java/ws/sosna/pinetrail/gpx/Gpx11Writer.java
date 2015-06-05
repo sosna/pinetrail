@@ -74,7 +74,7 @@ final class Gpx11Writer implements Writer {
             final GpxType gpx = new PinetrailToGpx11Mapper().getGpxInstance(
                 trail, settings);
             final Marshaller marshaller
-                = GpxJaxbUtils.INSTANCE.getGpx11Context().createMarshaller();
+                = Gpx11JaxbUtils.INSTANCE.getGpx11Context().createMarshaller();
             if (settings.prettyPrinting()) {
                 marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
             }

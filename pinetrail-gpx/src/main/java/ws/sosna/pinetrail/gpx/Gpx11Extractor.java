@@ -59,9 +59,9 @@ final class Gpx11Extractor {
     GpxType parseXml(final Path fileLocation) {
         try (final BufferedReader reader
             = Files.newBufferedReader(fileLocation)) {
-            final Unmarshaller u = GpxJaxbUtils.INSTANCE.getGpx11Context().
+            final Unmarshaller u = Gpx11JaxbUtils.INSTANCE.getGpx11Context().
                 createUnmarshaller();
-            u.setSchema(GpxJaxbUtils.INSTANCE.getGpx11Schema());
+            u.setSchema(Gpx11JaxbUtils.INSTANCE.getGpx11Schema());
             final Set<String> validationIssues = new LinkedHashSet<>();
             u.setEventHandler(event -> validationIssues.add(event.toString()));
             final JAXBElement<GpxType> root = u.unmarshal(new StreamSource(
