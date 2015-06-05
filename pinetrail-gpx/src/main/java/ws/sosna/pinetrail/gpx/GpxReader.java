@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Xavier Sosnovsky <xso@sosna.ws>
+ * Copyright (c) 2015, Xavier Sosnovsky <xso@sosna.ws>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,6 @@
  */
 package ws.sosna.pinetrail.gpx;
 
-import com.topografix.gpx._1._1.GpxType;
 import java.nio.file.Path;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -29,48 +28,52 @@ import ws.sosna.pinetrail.utils.logging.Markers;
 import ws.sosna.pinetrail.utils.logging.StatusCodes;
 
 /**
- * Reads GPX 1.1 files and map the extracted information to the Pinetrail model.
+ * Abstract class for readers of GPX files that map the extracted information to
+ * the Pinetrail model.
  *
  * @author Xavier Sosnovsky
  */
-final class Gpx11Reader implements Reader {
+abstract class GpxReader<T extends Object> implements Reader {
 
     private static final Logger LOGGER
-        = LoggerFactory.getLogger(Gpx11Reader.class);
-    private boolean groupSubTrails;
+        = LoggerFactory.getLogger(GpxReader.class);
+    protected boolean groupSubTrails;
 
-    Gpx11Reader() {
+    protected GpxReader() {
         super();
         groupSubTrails = false;
-        LOGGER.debug(Markers.IO.getMarker(), "{} | {} | {}.",
-            Actions.CREATE, StatusCodes.OK.getCode(),
-            "Instantiated a new Gpx11Reader");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Reader configure(final ReaderSettings settings) {
         groupSubTrails = settings.groupSubTrails();
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<Trail> apply(final Path fileLocation) {
         try {
             LOGGER.info(Markers.IO.getMarker(), "{} | {} | {}.",
                 Actions.PARSE, StatusCodes.OK.getCode(), "Started parsing "
-                + "GPX 1.1 file " + fileLocation.toAbsolutePath().normalize().
-                    toString());
+                + "GPX file " + fileLocation.toAbsolutePath().normalize().
+                toString());
             final long start = System.currentTimeMillis();
-            final GpxType gpx = new Gpx11Extractor().parseXml(fileLocation);
+            final T gpx = getExtractor().parseXml(fileLocation);
             final long parsingTime = System.currentTimeMillis() - start;
             final long startMapping = System.currentTimeMillis();
             final Set<Trail> trails
-                = new Gpx11ToPinetrailMapper(groupSubTrails).mapToTrails(gpx);
+                = getMapper(groupSubTrails).mapToTrails(gpx);
             final long end = System.currentTimeMillis();
             LOGGER.info(Markers.PERFORMANCE.getMarker(), "{} | {} | {}",
                 Actions.PARSE, StatusCodes.OK.getCode(), "Processed "
                 + fileLocation.toAbsolutePath().normalize().toString() + " in "
-                    + (end - start) + "ms (parsing: "
+                + (end - start) + "ms (parsing: "
                 + parsingTime + " - mapping: " + (end - startMapping) + ")");
             return trails;
         } catch (final ExecutionError e) {
@@ -80,4 +83,16 @@ final class Gpx11Reader implements Reader {
             throw e;
         }
     }
+
+    /**
+     * @return the class that will extract the Java classes from the supplied
+     * XML
+     */
+    abstract GpxExtractor<T> getExtractor();
+
+    /**
+     * @param groupSubTrails whether segments should be grouped.
+     * @return the class that will map the GPX classes to the Pinetrail ones.
+     */
+    abstract JaxbToPinetrailMapper<T> getMapper(final boolean groupSubTrails);
 }
