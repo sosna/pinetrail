@@ -15,10 +15,7 @@
  */
 package ws.sosna.pinetrail.gpx;
 
-import com.topografix.gpx._1._1.GpxType;
-import com.topografix.gpx._1._1.TrkType;
-import com.topografix.gpx._1._1.TrksegType;
-import com.topografix.gpx._1._1.WptType;
+import com.topografix.gpx._1._0.Gpx;
 import java.math.BigDecimal;
 import java.nio.file.FileSystems;
 import javax.xml.bind.JAXBException;
@@ -30,27 +27,26 @@ import ws.sosna.pinetrail.utils.error.ExecutionError;
 /**
  * @author Xavier Sosnovsky
  */
-public class Gpx11ExtractorTest {
+public class Gpx10ExtractorTest {
 
     @Test
     public void parseXml() {
-        final Gpx11Extractor extractor = new Gpx11Extractor();
-        final GpxType extracted = extractor.parseXml(
-            FileSystems.
-            getDefault().getPath(".",
-                "src/test/resources/2014-05-18_Wispertal.gpx"));
+        final Gpx10Extractor extractor = new Gpx10Extractor();
+        final Gpx extracted = extractor.parseXml(
+            FileSystems.getDefault().getPath(".",
+                "src/test/resources/test_bike.gpx"));
         assertNotNull(extracted);
         assertEquals(0, extracted.getRte().size());
         assertEquals(0, extracted.getWpt().size());
         assertEquals(1, extracted.getTrk().size());
-        final TrkType trail = extracted.getTrk().get(0);
+        final Gpx.Trk trail = extracted.getTrk().get(0);
         assertEquals(1, trail.getTrkseg().size());
-        final TrksegType seg = trail.getTrkseg().get(0);
-        assertEquals(779, seg.getTrkpt().size());
-        final WptType point = seg.getTrkpt().get(777);
-        assertEquals(new BigDecimal("50.1181330718"), point.getLat());
-        assertEquals(new BigDecimal("7.9631000385"), point.getLon());
-        assertEquals(new BigDecimal("249.60"), point.getEle());
+        final Gpx.Trk.Trkseg seg = trail.getTrkseg().get(0);
+        assertEquals(4000, seg.getTrkpt().size());
+        final Gpx.Trk.Trkseg.Trkpt point = seg.getTrkpt().get(3999);
+        assertEquals(new BigDecimal("50.001615000"), point.getLat());
+        assertEquals(new BigDecimal("8.259343000"), point.getLon());
+        assertEquals(new BigDecimal("166.000000"), point.getEle());
     }
 
     @Test
@@ -72,8 +68,8 @@ public class Gpx11ExtractorTest {
         try {
             final Gpx11Extractor extractor = new Gpx11Extractor();
             extractor.parseXml(FileSystems.
-                getDefault().getPath(".", "src/test/resources/2014-05-18_"
-                    + "Wispertal_NotValid.gpx"));
+                getDefault().getPath(".",
+                    "src/test/resources/test_bike_not_valid.gpx"));
         } catch (final ExecutionError error) {
             if (!(error.getCause() instanceof JAXBException)) {
                 fail("Expected another exception type");

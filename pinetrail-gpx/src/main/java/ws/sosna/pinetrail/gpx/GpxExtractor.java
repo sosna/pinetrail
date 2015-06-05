@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Xavier Sosnovsky <xso@sosna.ws>
+ * Copyright (c) 2015, Xavier Sosnovsky <xso@sosna.ws>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,9 +15,9 @@
  */
 package ws.sosna.pinetrail.gpx;
 
-import com.topografix.gpx._1._1.GpxType;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -25,10 +25,12 @@ import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
 import org.slf4j.LoggerFactory;
 import ws.sosna.pinetrail.utils.error.ExecutionError;
 import ws.sosna.pinetrail.utils.logging.Actions;
@@ -36,36 +38,34 @@ import ws.sosna.pinetrail.utils.logging.Markers;
 import ws.sosna.pinetrail.utils.logging.StatusCodes;
 
 /**
- * Performs the extraction of the GPX 1.1 information using JAXB.
+ * Performs the extraction of the GPX information using JAXB.
  *
  * @author Xavier Sosnovsky
  */
-final class Gpx11Extractor {
+abstract class GpxExtractor<T extends Object> {
 
+    protected final ResourceBundle logMessages;
     private static final org.slf4j.Logger LOGGER
-        = LoggerFactory.getLogger(Gpx11Reader.class);
-    private final ResourceBundle logMessages;
+        = LoggerFactory.getLogger(GpxExtractor.class);
 
-    Gpx11Extractor() {
+    GpxExtractor() {
         super();
         logMessages = ResourceBundle.getBundle("GpxLogMessages",
             Locale.getDefault());
-        LOGGER.debug(Markers.IO.getMarker(), "{} | {} | {}.",
-            Actions.CREATE, StatusCodes.OK.getCode(), logMessages.getString(
-                "Beans.CreatedGpx11Extractor"));
     }
 
     @SuppressWarnings("PMD.LawOfDemeter")
-    GpxType parseXml(final Path fileLocation) {
+    final T parseXml(final Path fileLocation) {
         try (final BufferedReader reader
             = Files.newBufferedReader(fileLocation)) {
-            final Unmarshaller u = Gpx11JaxbUtils.INSTANCE.getGpx11Context().
-                createUnmarshaller();
-            u.setSchema(Gpx11JaxbUtils.INSTANCE.getGpx11Schema());
+            final Unmarshaller u = getJAXBContext().createUnmarshaller();
+            u.setSchema(getSchema());
             final Set<String> validationIssues = new LinkedHashSet<>();
             u.setEventHandler(event -> validationIssues.add(event.toString()));
-            final JAXBElement<GpxType> root = u.unmarshal(new StreamSource(
-                reader), GpxType.class);
+            final Class<T> cl = (Class<T>) ((ParameterizedType) getClass().
+                getGenericSuperclass()).getActualTypeArguments()[0];
+            final JAXBElement<T> root = u.unmarshal(new StreamSource(
+                reader), cl);
             if (!validationIssues.isEmpty()) {
                 LOGGER.warn(Markers.IO.getMarker(), "{} | {} | {}.",
                     Actions.VALIDATE, StatusCodes.SYNTAX_ERROR.getCode(),
@@ -88,4 +88,8 @@ final class Gpx11Extractor {
                 StatusCodes.INTERNAL_ERROR);
         }
     }
+
+    abstract JAXBContext getJAXBContext();
+
+    abstract Schema getSchema();
 }
