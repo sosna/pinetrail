@@ -23,8 +23,6 @@ import com.topografix.gpx._1._1.WptType;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.LinkedHashSet;
-import java.util.Locale;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.validation.ValidationException;
@@ -45,24 +43,20 @@ import ws.sosna.pinetrail.utils.logging.StatusCodes;
  *
  * @author Xavier Sosnovsky
  */
-final class Gpx11ToPinetrailMapper {
+final class Gpx11ToPinetrailMapper extends JaxbToPinetrailMapper<GpxType> {
 
     private static final org.slf4j.Logger LOGGER
         = LoggerFactory.getLogger(Gpx11ToPinetrailMapper.class);
-    private final ResourceBundle logMessages;
-    private final boolean groupSubTrails;
 
     Gpx11ToPinetrailMapper(final boolean groupSubTrails) {
-        super();
-        logMessages = ResourceBundle.getBundle("GpxLogMessages",
-            Locale.getDefault());
-        this.groupSubTrails = groupSubTrails;
+        super(groupSubTrails);
         LOGGER.debug(Markers.IO.getMarker(), "{} | {} | {}.",
             Actions.CREATE, StatusCodes.OK.getCode(), logMessages.getString(
                 "Beans.CreatedGpx11Mapper"));
     }
 
     @SuppressWarnings("PMD.LawOfDemeter")
+    @Override
     Set<Trail> mapToTrails(final GpxType gpx) {
         final Set<Trail> trails = new LinkedHashSet<>();
         final Set<Waypoint> waypoints = new LinkedHashSet<>();
