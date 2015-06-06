@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Xavier Sosnovsky <xso@sosna.ws>
+ * Copyright (c) 2015, Xavier Sosnovsky <xso@sosna.ws>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,18 +15,10 @@
  */
 package ws.sosna.pinetrail.gpx;
 
-import com.topografix.gpx._1._1.GpxType;
-import com.topografix.gpx._1._1.LinkType;
-import com.topografix.gpx._1._1.TrkType;
-import com.topografix.gpx._1._1.TrksegType;
-import com.topografix.gpx._1._1.WptType;
-import java.net.URI;
-import java.net.URISyntaxException;
+import com.topografix.gpx._1._0.Gpx;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
-import ws.sosna.pinetrail.model.Link;
-import ws.sosna.pinetrail.model.LinkBuilder;
 import ws.sosna.pinetrail.model.Trail;
 import ws.sosna.pinetrail.model.Waypoint;
 import ws.sosna.pinetrail.utils.logging.Actions;
@@ -34,19 +26,19 @@ import ws.sosna.pinetrail.utils.logging.Markers;
 import ws.sosna.pinetrail.utils.logging.StatusCodes;
 
 /**
- * Performs the mapping of the GPX 1.1 information to the Pinetrail model.
+ * Performs the mapping of the GPX 1.0 information to the Pinetrail model.
  *
  * @author Xavier Sosnovsky
  */
-final class Gpx11ToPinetrailMapper extends JaxbToPinetrailMapper<GpxType> {
+final class Gpx10ToPinetrailMapper extends JaxbToPinetrailMapper<Gpx> {
 
-    Gpx11ToPinetrailMapper(final boolean groupSubTrails) {
+    Gpx10ToPinetrailMapper(final boolean groupSubTrails) {
         super(groupSubTrails);
     }
 
     @SuppressWarnings("PMD.LawOfDemeter")
     @Override
-    Set<Trail> mapToTrails(final GpxType gpx) {
+    Set<Trail> mapToTrails(final Gpx gpx) {
         final Set<Trail> trails = new LinkedHashSet<>();
         final Set<Waypoint> waypoints = new LinkedHashSet<>();
         if (!gpx.getWpt().isEmpty() && 1 < gpx.getTrk().size()) {
@@ -63,7 +55,7 @@ final class Gpx11ToPinetrailMapper extends JaxbToPinetrailMapper<GpxType> {
                 Actions.PARSE, StatusCodes.NOT_FOUND.getCode(),
                 logMessages.getString("Error.NoTrack"));
         } else {
-            for (final TrkType trk : gpx.getTrk()) {
+            for (final Gpx.Trk trk : gpx.getTrk()) {
                 trails.addAll(handleTrack(trk, waypoints));
             }
         }
@@ -76,27 +68,24 @@ final class Gpx11ToPinetrailMapper extends JaxbToPinetrailMapper<GpxType> {
     }
 
     @SuppressWarnings("PMD.LawOfDemeter")
-    private Set<Trail> handleTrack(final TrkType trk,
+    private Set<Trail> handleTrack(final Gpx.Trk trk,
         final Set<Waypoint> waypoints) {
         if (trk.getTrkseg().isEmpty()) {
             LOGGER.warn(Markers.IO.getMarker(), "{} | {} | {}.",
                 Actions.PARSE, StatusCodes.NOT_FOUND.getCode(),
                 logMessages.getString("Error.NoSegment"));
         }
-        final Set<Link> links = trk.getLink().stream().map(
-            lnk -> handleLink(lnk)).filter(lnk -> lnk != null).collect(
-                Collectors.toSet());
         final Set<Waypoint> points
             = handleAdditionalWaypoints(trk.getTrkseg().size() > 1, waypoints);
-        return handleSegments(trk, points, links);
+        return handleSegments(trk, points);
     }
 
-    private Set<Trail> handleSegments(final TrkType trk,
-        final Set<Waypoint> points, final Set<Link> links) {
+    private Set<Trail> handleSegments(final Gpx.Trk trk,
+        final Set<Waypoint> points) {
         int count = 1;
         final String trailName = trk.getName();
         final Set<Trail> trails = new LinkedHashSet<>();
-        for (final TrksegType seg : trk.getTrkseg()) {
+        for (final Gpx.Trk.Trkseg seg : trk.getTrkseg()) {
             final Set<Waypoint> segPoints = seg.getTrkpt().stream().map(
                 wpt -> handlePoint(wpt)).filter(wpt -> wpt != null).
                 collect(Collectors.toSet());
@@ -108,7 +97,7 @@ final class Gpx11ToPinetrailMapper extends JaxbToPinetrailMapper<GpxType> {
                 final String segName = trk.getTrkseg().size() > 1
                     ? trailName + " [" + count++ + "]" : trailName;
                 final Trail trail
-                    = getTrail(segName, points, trk.getDesc(), links);
+                    = getTrail(segName, points, trk.getDesc(), null);
                 if (null != trail) {
                     trails.add(trail);
                 }
@@ -116,7 +105,7 @@ final class Gpx11ToPinetrailMapper extends JaxbToPinetrailMapper<GpxType> {
         }
         if (groupSubTrails) {
             final Trail trail
-                = getTrail(trailName, points, trk.getDesc(), links);
+                = getTrail(trailName, points, trk.getDesc(), null);
             if (null != trail) {
                 trails.add(trail);
             }
@@ -125,25 +114,16 @@ final class Gpx11ToPinetrailMapper extends JaxbToPinetrailMapper<GpxType> {
     }
 
     @SuppressWarnings("PMD.LawOfDemeter")
-    private Waypoint handlePoint(final WptType wpt) {
-        final Set<Link> links = wpt.getLink().stream().map(lnk -> handleLink(
-            lnk)).filter(lnk -> lnk != null).collect(Collectors.toSet());
+    private Waypoint handlePoint(final Gpx.Wpt wpt) {
         return buildPoint(wpt.getTime().toGregorianCalendar().
             toInstant(), wpt.getLon().doubleValue(), wpt.getLat().doubleValue(),
-            wpt.getEle(), wpt.getName(), wpt.getDesc(), links);
+            wpt.getEle(), wpt.getName(), wpt.getDesc(), null);
     }
 
     @SuppressWarnings("PMD.LawOfDemeter")
-    private Link handleLink(final LinkType linkType) {
-        try {
-            return new LinkBuilder(linkType.getText(), new URI(linkType.
-                getHref())).build();
-        } catch (final URISyntaxException e) {
-            final String logMsg = logMessages.getString("Error.LinkURI")
-                + "(" + linkType.getHref() + "). Error was: " + e.getMessage();
-            LOGGER.warn(Markers.IO.getMarker(), "{} | {} | {}.",
-                Actions.PARSE, StatusCodes.SYNTAX_ERROR.getCode(), logMsg);
-            return null;
-        }
+    private Waypoint handlePoint(final Gpx.Trk.Trkseg.Trkpt wpt) {
+        return buildPoint(wpt.getTime().toGregorianCalendar().
+            toInstant(), wpt.getLon().doubleValue(), wpt.getLat().doubleValue(),
+            wpt.getEle(), wpt.getName(), wpt.getDesc(), null);
     }
 }

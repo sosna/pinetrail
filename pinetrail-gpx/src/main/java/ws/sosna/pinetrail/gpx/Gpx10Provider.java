@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Xavier Sosnovsky <xso@sosna.ws>
+ * Copyright (c) 2015, Xavier Sosnovsky <xso@sosna.ws>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,24 +18,22 @@ package ws.sosna.pinetrail.gpx;
 import ws.sosna.pinetrail.api.io.Formats;
 import ws.sosna.pinetrail.api.io.Reader;
 import ws.sosna.pinetrail.api.io.ReaderProvider;
-import ws.sosna.pinetrail.api.io.Writer;
-import ws.sosna.pinetrail.api.io.WriterProvider;
 
 /**
- * Provider of services reading/writing from/to GPX 1.1 files.
+ * Provider of services reading/writing from/to GPX 1.0 files.
  *
  * <p>
- * This implementation is immutable, and so are the readers and writers returned
- * by this provider.
+ * This implementation is immutable, and so are the readers returned by this
+ * provider.
  *
  * @author Xavier Sosnovsky
  */
-public final class Gpx11Provider implements ReaderProvider, WriterProvider {
+public final class Gpx10Provider implements ReaderProvider {
 
     /**
-     * Creates a new provider of GPX 1.1 readers.
+     * Creates a new provider of GPX 1.0 readers.
      */
-    public Gpx11Provider() {
+    public Gpx10Provider() {
         super();
     }
 
@@ -44,14 +42,6 @@ public final class Gpx11Provider implements ReaderProvider, WriterProvider {
      */
     @Override
     public Reader newReader(final Formats format) {
-        return Formats.GPX_1_1 == format ? new Gpx11Reader() : null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Writer newWriter(final Formats format) {
-        return Formats.GPX_1_1 == format ? new Gpx11Writer() : null;
+        return Formats.GPX_1_0 == format ? new Gpx10Reader() : null;
     }
 }
