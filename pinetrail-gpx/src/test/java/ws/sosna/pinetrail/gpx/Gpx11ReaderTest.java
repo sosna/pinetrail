@@ -17,8 +17,6 @@ package ws.sosna.pinetrail.gpx;
 
 import java.nio.file.FileSystems;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import org.junit.AfterClass;
@@ -81,7 +79,7 @@ public class Gpx11ReaderTest {
     }
 
     @Test
-    public void twoSegments() throws InterruptedException {;
+    public void twoSegments() throws InterruptedException {
         final Reader reader = new Gpx11Reader();
         final Set<Trail> trails = reader.apply(FileSystems.
             getDefault().getPath(".",
@@ -92,10 +90,8 @@ public class Gpx11ReaderTest {
                 switch (trail.getName()) {
                     case "Wispertal [1]": {
                         assertEquals(779, trail.getWaypoints().size());
-                        final List<Waypoint> list = new ArrayList<>(trail.
-                            getWaypoints());
-                        final Waypoint first = list.get(0);
-                        final Waypoint last = list.get(list.size() - 1);
+                        final Waypoint first = trail.getWaypoints().first();
+                        final Waypoint last = trail.getWaypoints().last();
                         assertEquals(Instant.parse("2014-05-18T08:25:32Z"),
                             first.getTime());
                         assertEquals(Double.parseDouble("50.1181208342"), first.
@@ -112,9 +108,7 @@ public class Gpx11ReaderTest {
                     }
                     case "Wispertal [2]": {
                         assertEquals(1, trail.getWaypoints().size());
-                        final List<Waypoint> list = new ArrayList<>(trail.
-                            getWaypoints());
-                        final Waypoint first = list.get(0);
+                        final Waypoint first = trail.getWaypoints().first();
                         assertEquals(Instant.parse("2014-05-18T08:25:40Z"),
                             first.getTime());
                         assertEquals(Double.parseDouble("50.1181208342"), first.
@@ -154,10 +148,8 @@ public class Gpx11ReaderTest {
                 switch (trail.getName()) {
                     case "Wispertal": {
                         assertEquals(784, trail.getWaypoints().size());
-                        final List<Waypoint> list = new ArrayList<>(trail.
-                            getWaypoints());
-                        final Waypoint first = list.get(0);
-                        final Waypoint last = list.get(list.size() - 1);
+                        final Waypoint first = trail.getWaypoints().first();
+                        final Waypoint last = trail.getWaypoints().last();
                         assertEquals(Instant.parse("2013-10-03T09:06:37Z"),
                             first.getTime());
                         assertEquals(Double.parseDouble("50.205804"), first.
@@ -195,10 +187,8 @@ public class Gpx11ReaderTest {
                 switch (trail.getName()) {
                     case "Wispertal [1]": {
                         assertEquals(779, trail.getWaypoints().size());
-                        final List<Waypoint> list = new ArrayList<>(trail.
-                            getWaypoints());
-                        final Waypoint first = list.get(0);
-                        final Waypoint last = list.get(list.size() - 1);
+                        final Waypoint first = trail.getWaypoints().first();
+                        final Waypoint last = trail.getWaypoints().last();
                         assertEquals(Instant.parse("2014-05-18T08:25:32Z"),
                             first.getTime());
                         assertEquals(Double.parseDouble("50.1181208342"), first.
@@ -226,9 +216,7 @@ public class Gpx11ReaderTest {
                                     getLocation().
                                     toString());
                             });
-                        final List<Waypoint> list = new ArrayList<>(trail.
-                            getWaypoints());
-                        final Waypoint first = list.get(0);
+                        final Waypoint first = trail.getWaypoints().first();
                         assertEquals(Instant.parse("2014-05-18T08:25:32Z"),
                             first.
                             getTime());

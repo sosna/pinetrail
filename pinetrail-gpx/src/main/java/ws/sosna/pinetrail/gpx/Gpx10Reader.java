@@ -42,6 +42,6 @@ final class Gpx10Reader extends GpxReader<Gpx> implements Reader {
      */
     @Override
     JaxbToPinetrailMapper<Gpx> getMapper(boolean groupSubTrails) {
-        return null;
+        return new Gpx10ToPinetrailMapper(groupSubTrails);
     }
 }
