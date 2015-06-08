@@ -27,13 +27,14 @@ import org.kohsuke.args4j.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ws.sosna.pinetrail.api.io.Formats;
+import ws.sosna.pinetrail.api.io.Reader;
 import ws.sosna.pinetrail.api.io.ReaderSettings;
 import ws.sosna.pinetrail.api.io.ReaderSettingsBuilder;
+import ws.sosna.pinetrail.api.io.Readers;
 import ws.sosna.pinetrail.api.io.Writer;
 import ws.sosna.pinetrail.api.io.WriterSettings;
 import ws.sosna.pinetrail.api.io.WriterSettingsBuilder;
 import ws.sosna.pinetrail.api.io.Writers;
-import ws.sosna.pinetrail.gpx.Gpx11Provider;
 import ws.sosna.pinetrail.model.Level;
 import ws.sosna.pinetrail.model.Trail;
 import ws.sosna.pinetrail.utils.logging.Actions;
@@ -196,16 +197,16 @@ final class Cleaner implements Runnable {
 
     @Option(name = "-rt", aliases = {"--route"}, metaVar = "boolean",
         usage = "Whether the trail should contain time information. Removing "
-            + "time information can be useful, for example, when sharing an "
-            + "itinerary. Defaults to false.")
+        + "time information can be useful, for example, when sharing an "
+        + "itinerary. Defaults to false.")
     void writeRoute(final boolean flag) {
         this.writeRoute = flag;
     }
 
     @Option(name = "-x", aliases = {"--cross-border"}, metaVar = "boolean",
         usage = "Whether the trail crosses country borders. If true, multiple "
-            + "points will be selected for reverse geocoding. Defaults to "
-            + "false for performance reasons.")
+        + "points will be selected for reverse geocoding. Defaults to "
+        + "false for performance reasons.")
     void crossBorder(final boolean flag) {
         this.crossBorder = flag;
     }
@@ -225,16 +226,24 @@ final class Cleaner implements Runnable {
         final Set<Path> files = getInputFiles(FileSystems.getDefault().
             getPath(".", inputFile));
         files.parallelStream()
-            .map(path -> processJob(path)).forEach(r -> handleResults(r));
+            .map(path -> processJob(path)).filter(i -> i != null).forEach(
+                r -> handleResults(r));
     }
 
     private Results processJob(final Path path) {
         final ReaderSettings settings = new ReaderSettingsBuilder().
             groupSubTrails(groupSubTrails).crossBorder(crossBorder).build();
-        final Set<Trail> trails
-            = new Gpx11Provider().newReader(Formats.GPX_1_1)
-            .configure(settings).apply(path);
-        return new Results(path, trails);
+        final Formats format = Formats.of(path);
+        final Reader reader = Readers.INSTANCE.newReader(format);
+        if (null == reader) {
+            LOGGER.error(Markers.IO.getMarker(), "{} | {} | {}.",
+                Actions.PARSE, StatusCodes.NOT_FOUND.getCode(),
+                "Could not find reader for " + path.toString());
+            return null;
+        } else {
+            final Set<Trail> trails = reader.configure(settings).apply(path);
+            return new Results(path, trails);
+        }
     }
 
     private void handleResults(final Results results) {
