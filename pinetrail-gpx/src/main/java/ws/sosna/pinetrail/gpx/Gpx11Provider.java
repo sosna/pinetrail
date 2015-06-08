@@ -33,7 +33,7 @@ import ws.sosna.pinetrail.api.io.WriterProvider;
 public final class Gpx11Provider implements ReaderProvider, WriterProvider {
 
     /**
-     * Creates a new provider of GPX readers.
+     * Creates a new provider of GPX 1.1 readers.
      */
     public Gpx11Provider() {
         super();

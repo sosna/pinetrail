@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Xavier Sosnovsky <xso@sosna.ws>
+ * Copyright (c) 2015, Xavier Sosnovsky <xso@sosna.ws>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,33 +15,28 @@
  */
 package ws.sosna.pinetrail.gpx;
 
-import com.topografix.gpx._1._1.GpxType;
-import ws.sosna.pinetrail.api.io.Reader;
+import com.topografix.gpx._1._0.Gpx;
+import javax.xml.bind.JAXBContext;
+import javax.xml.validation.Schema;
 
 /**
- * Reads GPX 1.1 files and map the extracted information to the Pinetrail model.
+ * Performs the extraction of the GPX 1.0 information using JAXB.
  *
  * @author Xavier Sosnovsky
  */
-final class Gpx11Reader extends GpxReader<GpxType> implements Reader {
+final class Gpx10Extractor extends GpxExtractor<Gpx> {
 
-    Gpx11Reader() {
+    Gpx10Extractor() {
         super();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    GpxExtractor<GpxType> getExtractor() {
-        return new Gpx11Extractor();
+    JAXBContext getJAXBContext() {
+        return Gpx10JaxbUtils.INSTANCE.getGpx10Context();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    JaxbToPinetrailMapper<GpxType> getMapper(boolean groupSubTrails) {
-        return new Gpx11ToPinetrailMapper(groupSubTrails);
+    Schema getSchema() {
+        return Gpx10JaxbUtils.INSTANCE.getGpx10Schema();
     }
 }

@@ -123,19 +123,19 @@ final class TrailInfoWriter {
                 getGradeSummary().getOutliers().size());
         bld.append("\n--- Distance ---");
         bld.append("\nTotal: ").
-            append(new DecimalFormat("#.0").format(
+            append(new DecimalFormat("#0.0").format(
                     trail.getStatistics().getDistanceSummary().getActive().
                     getSum() / M2KM)).append(" km.");
         bld.append("\nUp: ").
-            append(new DecimalFormat("#.0").format(trail.
+            append(new DecimalFormat("#0.0").format(trail.
                     getStatistics().getDistanceSummary().getActiveUp().
                     getSum() / M2KM)).append(" km.");
         bld.append("\nDown: ").
-            append(new DecimalFormat("#.0").format(trail.
+            append(new DecimalFormat("#0.0").format(trail.
                     getStatistics().getDistanceSummary().getActiveDown().
                     getSum() / M2KM)).append(" km.");
         bld.append("\nFlat: ").
-            append(new DecimalFormat("#.0").format(trail.
+            append(new DecimalFormat("#0.0").format(trail.
                     getStatistics().getDistanceSummary().getActiveFlat().
                     getSum() / M2KM)).append(" km.");
         bld.append("\n--- Speed ---");

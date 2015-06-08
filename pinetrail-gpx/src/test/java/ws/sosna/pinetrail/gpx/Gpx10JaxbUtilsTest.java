@@ -15,33 +15,37 @@
  */
 package ws.sosna.pinetrail.gpx;
 
-import com.topografix.gpx._1._1.GpxType;
-import ws.sosna.pinetrail.api.io.Reader;
+import java.util.Locale;
+import javax.xml.bind.JAXBContext;
+import javax.xml.validation.Schema;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.junit.BeforeClass;
 
 /**
- * Reads GPX 1.1 files and map the extracted information to the Pinetrail model.
- *
  * @author Xavier Sosnovsky
  */
-final class Gpx11Reader extends GpxReader<GpxType> implements Reader {
+public class Gpx10JaxbUtilsTest {
 
-    Gpx11Reader() {
-        super();
+    @BeforeClass
+    public static void init() {
+        Locale.setDefault(Locale.ENGLISH);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    GpxExtractor<GpxType> getExtractor() {
-        return new Gpx11Extractor();
+    @Test
+    public void getGpx10Context() {
+        final JAXBContext context1 =
+            Gpx10JaxbUtils.valueOf("INSTANCE").getGpx10Context();
+        final JAXBContext context2 = Gpx10JaxbUtils.INSTANCE.getGpx10Context();
+        assertNotNull(context1);
+        assertSame(context1, context2);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    JaxbToPinetrailMapper<GpxType> getMapper(boolean groupSubTrails) {
-        return new Gpx11ToPinetrailMapper(groupSubTrails);
+    @Test
+    public void testGetGpx10Schema() {
+        final Schema schema1 = Gpx10JaxbUtils.INSTANCE.getGpx10Schema();
+        final Schema schema2 = Gpx10JaxbUtils.INSTANCE.getGpx10Schema();
+        assertNotNull(schema1);
+        assertSame(schema1, schema2);
     }
 }

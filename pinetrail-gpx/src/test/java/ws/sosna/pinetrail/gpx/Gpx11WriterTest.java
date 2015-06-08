@@ -32,7 +32,6 @@ import javax.xml.transform.stream.StreamSource;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -295,9 +294,9 @@ public class Gpx11WriterTest {
 
         try (final BufferedReader routeReader
             = Files.newBufferedReader(path)) {
-            final Unmarshaller u = GpxJaxbUtils.INSTANCE.getGpx11Context().
+            final Unmarshaller u = Gpx11JaxbUtils.INSTANCE.getGpx11Context().
                 createUnmarshaller();
-            u.setSchema(GpxJaxbUtils.INSTANCE.getGpx11Schema());
+            u.setSchema(Gpx11JaxbUtils.INSTANCE.getGpx11Schema());
             final Set<String> validationIssues = new LinkedHashSet<>();
             u.setEventHandler(event -> validationIssues.add(event.toString()));
             final JAXBElement<GpxType> root = u.unmarshal(new StreamSource(
@@ -323,9 +322,14 @@ public class Gpx11WriterTest {
                     "src/test/resources/long_route.gpx"));
             assertEquals(1, trails.size());
             final Trail trail = (Trail) trails.toArray()[0];
+            boolean allNull = true;
             for (final Waypoint pt : trail.getWaypoints()) {
-                assertNotNull(pt.getCoordinates().getElevation());
+                if(null != pt.getCoordinates().getElevation()) {
+                    allNull = false;
+                    break;
+                }
             }
+            assertFalse(allNull);
         }
     }
 }

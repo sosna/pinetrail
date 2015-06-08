@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Xavier Sosnovsky <xso@sosna.ws>
+ * Copyright (c) 2015, Xavier Sosnovsky <xso@sosna.ws>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,17 +15,25 @@
  */
 package ws.sosna.pinetrail.gpx;
 
-import com.topografix.gpx._1._1.GpxType;
+import ws.sosna.pinetrail.api.io.Formats;
 import ws.sosna.pinetrail.api.io.Reader;
+import ws.sosna.pinetrail.api.io.ReaderProvider;
 
 /**
- * Reads GPX 1.1 files and map the extracted information to the Pinetrail model.
+ * Provider of services reading/writing from/to GPX 1.0 files.
+ *
+ * <p>
+ * This implementation is immutable, and so are the readers returned by this
+ * provider.
  *
  * @author Xavier Sosnovsky
  */
-final class Gpx11Reader extends GpxReader<GpxType> implements Reader {
+public final class Gpx10Provider implements ReaderProvider {
 
-    Gpx11Reader() {
+    /**
+     * Creates a new provider of GPX 1.0 readers.
+     */
+    public Gpx10Provider() {
         super();
     }
 
@@ -33,15 +41,7 @@ final class Gpx11Reader extends GpxReader<GpxType> implements Reader {
      * {@inheritDoc}
      */
     @Override
-    GpxExtractor<GpxType> getExtractor() {
-        return new Gpx11Extractor();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    JaxbToPinetrailMapper<GpxType> getMapper(boolean groupSubTrails) {
-        return new Gpx11ToPinetrailMapper(groupSubTrails);
+    public Reader newReader(final Formats format) {
+        return Formats.GPX_1_0 == format ? new Gpx10Reader() : null;
     }
 }
