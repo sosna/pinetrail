@@ -139,7 +139,7 @@ enum PointsAugmenter implements Function<SortedSet<Waypoint>,
 
     private Double calculateSpeed(final Double distance, final long elapsed) {
         //Distance in m and duration in sec converted to km/h.
-        return (distance / elapsed) * MS2KMH;
+        return elapsed > 0 ? (distance / elapsed) * MS2KMH : 0;
     }
 
     private boolean isActive(final Double speed) {
