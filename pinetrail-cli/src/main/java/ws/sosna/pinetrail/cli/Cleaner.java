@@ -221,6 +221,9 @@ final class Cleaner implements Runnable {
             "ws.sosna.pinetrail.model.Trail").put("keepOutliers",
                 Boolean.toString(keepOutliers));
         Preferences.userRoot().node(
+            "ws.sosna.pinetrail.model.Trail").put("keepIdlePoints",
+                Boolean.toString(keepIdlePoints));
+        Preferences.userRoot().node(
             "ws.sosna.pinetrail.model.Trail").put("crossBorder",
                 Boolean.toString(crossBorder));
         final Set<Path> files = getInputFiles(FileSystems.getDefault().
