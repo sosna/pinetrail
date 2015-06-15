@@ -28,6 +28,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 import javax.validation.ConstraintViolation;
 import javax.validation.ValidationException;
 import org.slf4j.Logger;
@@ -209,32 +210,52 @@ public final class TrailBuilder extends DescribableBuilder<TrailBuilder>
             "ws.sosna.pinetrail.model.Trail").get("keepOutliers", "false"));
         final int iterations = Integer.valueOf(Preferences.userRoot().node(
             "ws.sosna.pinetrail.model.Trail").get("cleanupPasses", "3"));
+        final boolean removeIdle = !(Boolean.valueOf(Preferences.userRoot()
+            .node("ws.sosna.pinetrail.model.Trail")
+            .get("keepIdlePoints", "false")));
         Trail obj;
         int i = 0;
         do {
-            obj = createTrail(i);
+            obj = createTrail(i, i == 0 && removeIdle);
             i++;
         } while (!skip && hasOutliers(obj) && i < iterations);
         validateTrail(obj);
         return obj;
     }
 
-    private Trail createTrail(final int iteration) {
+    private Trail createTrail(final int iteration, final boolean removeIdle) {
         final SortedSet<Waypoint> sortedPoints = null == points
             ? Collections.emptySortedSet() : new TreeSet(points);
+
         final long start = System.currentTimeMillis();
         final SortedSet<Waypoint> elePoints = 0 == iteration
             ? ElevationFixer.INSTANCE.apply(sortedPoints)
             : sortedPoints;
+
         final long eleTs = System.currentTimeMillis();
         final SortedSet<Waypoint> augmentedPoints
             = PointsAugmenter.INSTANCE.apply(elePoints);
+
+        if (removeIdle) {
+            final SortedSet<Waypoint> activePoints = augmentedPoints.stream().
+                filter(Waypoint::isActive).collect(Collectors.toCollection(
+                        TreeSet::new));
+            LOGGER.info(Markers.MODEL.getMarker(), "{} | {} | Removed {} idle"
+                + " points from trail", Actions.ANALYSE,
+                StatusCodes.OK.getCode(),
+                (augmentedPoints.size() - activePoints.size()));
+            augmentedPoints.clear();
+            augmentedPoints.addAll(PointsAugmenter.INSTANCE.apply(activePoints));
+        }
+
         final long augmentTs = System.currentTimeMillis();
         final TrailStatistics trailStatistics
             = StatisticsProvider.INSTANCE.apply(augmentedPoints);
+
         final long statsTs = System.currentTimeMillis();
         augmentTrail(trailStatistics, augmentedPoints);
         final long guessTs = System.currentTimeMillis();
+
         LOGGER.info(Markers.PERFORMANCE.getMarker(), "{} | {} | Performed trail"
             + " analysis in {} ms (Elevation data: {} - Augment points: {} - "
             + "Compute stats: {} - Reverse geocoding: {})", Actions.ANALYSE,

@@ -1,10 +1,10 @@
 /*
  * Copyright (c) 2014, Xavier Sosnovsky <xso@sosna.ws>
- * 
+ *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
  * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
@@ -18,8 +18,11 @@ package ws.sosna.pinetrail.api.store;
 import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.prefs.Preferences;
+import org.junit.AfterClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.BeforeClass;
 import ws.sosna.pinetrail.model.Activity;
 import ws.sosna.pinetrail.model.Coordinates;
 import ws.sosna.pinetrail.model.CoordinatesBuilder;
@@ -34,6 +37,23 @@ import ws.sosna.pinetrail.model.WaypointBuilder;
  * @author Xavier Sosnovsky
  */
 public class TrailSummaryTest {
+
+    private static Boolean keepIdlePoints;
+
+    @BeforeClass
+    public static void init() {
+        keepIdlePoints = Boolean.valueOf(Preferences.userRoot().node(
+            "ws.sosna.pinetrail.model.Trail").get("keepIdlePoints", "false"));
+        Preferences.userRoot().node(
+            "ws.sosna.pinetrail.model.Trail").put("keepIdlePoints", "true");
+    }
+
+    @AfterClass
+    public static void cleanup() {
+        Preferences.userRoot().node(
+            "ws.sosna.pinetrail.model.Trail").put("keepIdlePoints",
+                keepIdlePoints.toString());
+    }
 
     /**
      * Test of of method, of class TrailSummaryBuilder.
@@ -73,7 +93,7 @@ public class TrailSummaryTest {
         assertEquals("trail", summary.getName());
         assertEquals(0, summary.getRating());
     }
-    
+
     @Test
     public void checkToString() {
         final Waypoint point1 = newWaypoint(Instant.
@@ -103,7 +123,7 @@ public class TrailSummaryTest {
             + "elevationDifference=0.0, difficulty rating=0, movingSpeed=6.8km/h, "
             + "rating=0}", summary.toString());
     }
-    
+
     @Test
     public void checkEquals() {
         final Waypoint point1 = newWaypoint(Instant.
@@ -137,7 +157,7 @@ public class TrailSummaryTest {
         assertFalse(summary1.equals("type"));
         assertFalse(summary1.equals(null));
     }
-    
+
     @Test
     public void checkhashCode() {
         final Waypoint point1 = newWaypoint(Instant.

@@ -28,14 +28,33 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.validation.ValidationException;
+import org.junit.AfterClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
+import org.junit.BeforeClass;
 
 /**
  * @author Xavier Sosnovsky
  */
 public class TrailTest extends DescribableTest {
+
+    private static Boolean keepIdlePoints;
+
+    @BeforeClass
+    public static void init() {
+        keepIdlePoints = Boolean.valueOf(Preferences.userRoot().node(
+            "ws.sosna.pinetrail.model.Trail").get("keepIdlePoints", "false"));
+        Preferences.userRoot().node(
+            "ws.sosna.pinetrail.model.Trail").put("keepIdlePoints", "true");
+    }
+
+    @AfterClass
+    public static void cleanup() {
+        Preferences.userRoot().node(
+            "ws.sosna.pinetrail.model.Trail").put("keepIdlePoints",
+                keepIdlePoints.toString());
+    }
 
     private Trail trail;
 
