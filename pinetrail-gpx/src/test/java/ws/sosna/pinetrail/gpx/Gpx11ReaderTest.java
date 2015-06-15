@@ -35,6 +35,7 @@ import ws.sosna.pinetrail.utils.error.ExecutionError;
 public class Gpx11ReaderTest {
 
     private static Boolean keepOutliers;
+    private static Boolean keepIdlePoints;
 
     @BeforeClass
     public static void setup() {
@@ -42,6 +43,10 @@ public class Gpx11ReaderTest {
             "ws.sosna.pinetrail.model.Trail").get("keepOutliers", "false"));
         Preferences.userRoot().node(
             "ws.sosna.pinetrail.model.Trail").put("keepOutliers", "true");
+        keepIdlePoints = Boolean.valueOf(Preferences.userRoot().node(
+            "ws.sosna.pinetrail.model.Trail").get("keepIdlePoints", "false"));
+        Preferences.userRoot().node(
+            "ws.sosna.pinetrail.model.Trail").put("keepIdlePoints", "true");
     }
 
     @AfterClass
@@ -49,6 +54,9 @@ public class Gpx11ReaderTest {
         Preferences.userRoot().node(
             "ws.sosna.pinetrail.model.Trail").put("keepOutliers",
                 keepOutliers.toString());
+        Preferences.userRoot().node(
+            "ws.sosna.pinetrail.model.Trail").put("keepIdlePoints",
+                keepIdlePoints.toString());
     }
 
     @Test
