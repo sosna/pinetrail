@@ -37,6 +37,7 @@ public class Gpx11ToPinetrailMapperTest {
 
     private static Boolean keepOutliers;
     private static Boolean keepIdlePoints;
+    private static String userLevel;
 
     @BeforeClass
     public static void setup() {
@@ -48,6 +49,8 @@ public class Gpx11ToPinetrailMapperTest {
             "ws.sosna.pinetrail.model.Trail").get("keepIdlePoints", "false"));
         Preferences.userRoot().node(
             "ws.sosna.pinetrail.model.Trail").put("keepIdlePoints", "true");
+        userLevel = Preferences.userRoot().node(
+            "ws.sosna.pinetrail.UserSettings").get("level", "INTERMEDIATE");
     }
 
     @AfterClass
@@ -58,6 +61,8 @@ public class Gpx11ToPinetrailMapperTest {
         Preferences.userRoot().node(
             "ws.sosna.pinetrail.model.Trail").put("keepIdlePoints",
                 keepIdlePoints.toString());
+        Preferences.userRoot().node(
+            "ws.sosna.pinetrail.UserSettings").put("level", userLevel);
     }
 
     @Test
