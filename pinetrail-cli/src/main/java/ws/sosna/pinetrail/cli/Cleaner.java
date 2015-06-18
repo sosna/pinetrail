@@ -256,13 +256,18 @@ final class Cleaner implements Runnable {
             writeIdlePoints(keepIdlePoints).writeOutliers(keepOutliers).
             prettyPrinting(prettyPrinting).writeRoute(writeRoute).build();
         writer.configure(settings);
+
         int counter = results.trails.size() > 1 ? 1 : 0;
+
         for (final Trail trail : results.trails) {
             writer.accept(trail, getOutname(counter, results.path.toString()));
-            if (!isQuiet) {
+            counter++;
+        }
+
+        if (!isQuiet) {
+            for (final Trail trail : results.trails) {
                 new TrailInfoWriter().write(trail);
             }
-            counter++;
         }
     }
 

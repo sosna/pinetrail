@@ -44,6 +44,10 @@ final class TrailInfoWriter {
 
     void write(final Trail trail) {
         final StringBuilder bld = new StringBuilder();
+        bld.append("\n===");
+        bld.append("\nName: ");
+        bld.append(trail.getName());
+        bld.append("\n");
         bld.append("\n--- Overview ---");
         bld.append("\nNumber of points: ").append(trail.getWaypoints().
             size());
