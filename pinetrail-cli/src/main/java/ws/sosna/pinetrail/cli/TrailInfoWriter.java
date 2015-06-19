@@ -37,6 +37,7 @@ final class TrailInfoWriter {
     private static final int M2KM = 1000;
     private static final double MS2KMH = 3.6;
     private static final double MIN2H = 60;
+    private static final DecimalFormat DEC_FORMAT = new DecimalFormat("#0.0");
 
     TrailInfoWriter() {
         super();
@@ -72,7 +73,7 @@ final class TrailInfoWriter {
         final double outPerc = ((double) outliers.size() * 100.0)
             / (double) trail.getWaypoints().size();
         bld.append("\nNumber of outliers: ").append(outliers.size()).append(
-            " (").append(new DecimalFormat("#0.0").format(outPerc)).
+            " (").append(DEC_FORMAT.format(outPerc)).
             append("%)");
         bld.append("\nType of activity: ").append(trail.getActivity());
         if (Activity.HIKING == trail.getActivity()) {
@@ -84,6 +85,7 @@ final class TrailInfoWriter {
         }
         bld.append("\nCountries crossed by the trail: ").
             append(trail.getCountries());
+
         bld.append("\n--- Time ---");
         bld.append("\nStart: ").append(trail.getWaypoints().first().getTime());
         bld.append("\nEnd: ").append(trail.getWaypoints().last().getTime());
@@ -102,6 +104,7 @@ final class TrailInfoWriter {
         bld.append("\nFlat: ").append(Duration.of(((Double) trail.
             getStatistics().getTimeDifferenceSummary().getActiveFlat().getSum())
             .longValue(), ChronoUnit.SECONDS));
+
         bld.append("\n--- Elevation ---");
         bld.append("\nMin: ").append(Math.round(trail.getStatistics().
             getElevationSummary().getActive().getMin())).append(" meters.");
@@ -125,55 +128,56 @@ final class TrailInfoWriter {
         bld.append("\nOutliers (slope): ").
             append(trail.getStatistics().
                 getGradeSummary().getOutliers().size());
+
         bld.append("\n--- Distance ---");
         bld.append("\nTotal: ").
-            append(new DecimalFormat("#0.0").format(
+            append(DEC_FORMAT.format(
                     trail.getStatistics().getDistanceSummary().getActive().
                     getSum() / M2KM)).append(" km.");
         bld.append("\nUp: ").
-            append(new DecimalFormat("#0.0").format(trail.
+            append(DEC_FORMAT.format(trail.
                     getStatistics().getDistanceSummary().getActiveUp().
                     getSum() / M2KM)).append(" km.");
         bld.append("\nDown: ").
-            append(new DecimalFormat("#0.0").format(trail.
+            append(DEC_FORMAT.format(trail.
                     getStatistics().getDistanceSummary().getActiveDown().
                     getSum() / M2KM)).append(" km.");
         bld.append("\nFlat: ").
-            append(new DecimalFormat("#0.0").format(trail.
+            append(DEC_FORMAT.format(trail.
                     getStatistics().getDistanceSummary().getActiveFlat().
                     getSum() / M2KM)).append(" km.");
+
         bld.append("\n--- Speed ---");
-        bld.append("\nMoving: ").
-            append(new DecimalFormat("#.0").format((trail.getStatistics().
-                    getDistanceSummary().getActive().getSum()
-                    / trail.getStatistics().getTimeDifferenceSummary().
-                    getActive().getSum())
-                    * MS2KMH)).append(" km/h.");
+        bld.append("\nMoving: ").append(DEC_FORMAT.format(
+            formatSpeed(trail.getStatistics().getDistanceSummary().getActive()
+                .getSum(), trail.getStatistics().getTimeDifferenceSummary()
+                    .getActive().getSum()))).append(" km/h.");
         bld.append("\nUp: ").
-            append(new DecimalFormat("#.0").format((trail.getStatistics().
-                    getDistanceSummary().getActiveUp().getSum()
-                    / trail.getStatistics().getTimeDifferenceSummary().
-                    getActiveUp().
-                    getSum()) * MS2KMH)).append(" km/h.");
+            append(DEC_FORMAT.format(formatSpeed(trail
+                .getStatistics().getDistanceSummary().getActiveUp().getSum(),
+                trail.getStatistics().getTimeDifferenceSummary().getActiveUp().
+                    getSum()))).append(" km/h.");
         bld.append("\nDown: ").
-            append(new DecimalFormat("#.0").format((trail.getStatistics().
-                    getDistanceSummary().getActiveDown().getSum()
-                    / trail.getStatistics().getTimeDifferenceSummary().
-                    getActiveDown().
-                    getSum()) * MS2KMH)).append(" km/h.");
+            append(DEC_FORMAT.format(formatSpeed(trail
+                .getStatistics().getDistanceSummary().getActiveDown().getSum(),
+                trail.getStatistics().getTimeDifferenceSummary()
+                    .getActiveDown().getSum()))).append(" km/h.");
         bld.append("\nFlat: ").
-            append(new DecimalFormat("#.0").format((trail.getStatistics().
-                    getDistanceSummary().getActiveFlat().getSum()
-                    / trail.getStatistics().getTimeDifferenceSummary().
-                    getActiveFlat().
-                    getSum()) * MS2KMH)).append(" km/h.");
+            append(DEC_FORMAT.format(formatSpeed(trail
+                .getStatistics().getDistanceSummary().getActiveFlat().getSum(),
+                trail.getStatistics().getTimeDifferenceSummary()
+                    .getActiveFlat().getSum()))).append(" km/h.");
         bld.append("\nMax: ").
-            append(new DecimalFormat("#.0").format(trail.
+            append(DEC_FORMAT.format(trail.
                     getStatistics().getSpeedSummary().getActive().getMax())).
             append(" km/h.");
         bld.append("\nOutliers: ").
             append(trail.getStatistics().
                 getSpeedSummary().getOutliers().size());
         System.out.println(bld.toString());
+    }
+
+    private double formatSpeed(final double distance, final double time) {
+        return 0 < time ? (distance / time) * MS2KMH : 0;
     }
 }
