@@ -245,7 +245,11 @@ final class Cleaner implements Runnable {
             return null;
         } else {
             final Set<Trail> trails = reader.configure(settings).apply(path);
-            return new Results(path, trails);
+            if (0 == trails.size()) {
+                return null;
+            } else {
+                return new Results(path, trails);
+            }
         }
     }
 
