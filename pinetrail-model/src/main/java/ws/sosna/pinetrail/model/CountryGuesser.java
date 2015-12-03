@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
@@ -64,6 +65,7 @@ enum CountryGuesser implements Function<SortedSet<Waypoint>, Set<String>> {
     private static final Logger LOGGER = LoggerFactory.getLogger(
         CountryGuesser.class);
     private static final int DEFAULT_TIME_OUT = 3000;
+    private String mapQuestKey;
 
     /**
      * Determines the countries crossed by the trail, using reverse geocoding.
@@ -74,6 +76,15 @@ enum CountryGuesser implements Function<SortedSet<Waypoint>, Set<String>> {
     @Override
     public Set<String> apply(final SortedSet<Waypoint> points) {
         final Set<String> countries = new LinkedHashSet<>();
+        mapQuestKey = Preferences.userRoot().node(
+            "ws.sosna.pinetrail.UserSettings").get("mapQuestKey", "");
+        if (mapQuestKey.isEmpty()) {
+            LOGGER.warn(Markers.MODEL.getMarker(), "{} | {} | {}",
+                Actions.ANALYSE, StatusCodes.NOT_FOUND.getCode(),
+                "MapQuest key not found: Country will not be guessed.");
+            return countries;
+        }
+        
         try {
             countries.addAll(getSelectedPoints(points).parallelStream()
                 .map(p -> getCountry(parseXml(askMapquest(p))))
@@ -142,7 +153,8 @@ enum CountryGuesser implements Function<SortedSet<Waypoint>, Set<String>> {
         final String url = "http://open.mapquestapi.com/nominatim/v1/"
             + "reverse.php?format=xml"
             + "&lat=" + point.getCoordinates().getLatitude()
-            + "&lon=" + point.getCoordinates().getLongitude();
+            + "&lon=" + point.getCoordinates().getLongitude()
+            + "&key=" + mapQuestKey;
         try {
             final URL target = new URL(url);
             LOGGER.debug(Markers.NETWORK.getMarker(), "{} | {} | Created URL "
