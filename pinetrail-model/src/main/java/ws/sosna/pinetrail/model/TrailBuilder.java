@@ -63,7 +63,7 @@ import ws.sosna.pinetrail.utils.logging.StatusCodes;
  * @author Xavier Sosnovsky
  */
 public final class TrailBuilder extends DescribableBuilder<TrailBuilder>
-    implements Builder<Trail> {
+        implements Builder<Trail> {
 
     private Set<Waypoint> points;
     private Set<String> countries;
@@ -72,7 +72,7 @@ public final class TrailBuilder extends DescribableBuilder<TrailBuilder>
     private int rating;
     private UUID id;
     private static final Logger LOGGER = LoggerFactory.getLogger(
-        TrailBuilder.class);
+            TrailBuilder.class);
 
     /**
      * Instantiates a new TrailBuilder, with all mandatory fields.
@@ -193,10 +193,10 @@ public final class TrailBuilder extends DescribableBuilder<TrailBuilder>
      */
     public static TrailBuilder of(final Trail trail) {
         return new TrailBuilder(trail.getName(), trail.getWaypoints()).
-            description(trail.getDescription()).links(trail.getLinks()).
-            activity(trail.getActivity()).difficultyRating(
-                trail.getDifficultyRating()).countries(trail.getCountries())
-            .rating(trail.getRating()).id(trail.getId());
+                description(trail.getDescription()).links(trail.getLinks()).
+                activity(trail.getActivity()).difficultyRating(
+                        trail.getDifficultyRating()).countries(trail.getCountries())
+                .rating(trail.getRating()).id(trail.getId());
     }
 
     /**
@@ -207,12 +207,12 @@ public final class TrailBuilder extends DescribableBuilder<TrailBuilder>
     @Override
     public Trail build() {
         final boolean skip = Boolean.valueOf(Preferences.userRoot().node(
-            "ws.sosna.pinetrail.model.Trail").get("keepOutliers", "false"));
+                "ws.sosna.pinetrail.model.Trail").get("keepOutliers", "false"));
         final int iterations = Integer.valueOf(Preferences.userRoot().node(
-            "ws.sosna.pinetrail.model.Trail").get("cleanupPasses", "3"));
+                "ws.sosna.pinetrail.model.Trail").get("cleanupPasses", "3"));
         final boolean removeIdle = !(Boolean.valueOf(Preferences.userRoot()
-            .node("ws.sosna.pinetrail.model.Trail")
-            .get("keepIdlePoints", "false")));
+                .node("ws.sosna.pinetrail.model.Trail")
+                .get("keepIdlePoints", "false")));
         Trail obj;
         int i = 0;
         do {
@@ -225,56 +225,56 @@ public final class TrailBuilder extends DescribableBuilder<TrailBuilder>
 
     private Trail createTrail(final int iteration, final boolean removeIdle) {
         final SortedSet<Waypoint> sortedPoints = null == points
-            ? Collections.emptySortedSet() : new TreeSet(points);
+                ? Collections.emptySortedSet() : new TreeSet(points);
 
         final long start = System.currentTimeMillis();
         final SortedSet<Waypoint> elePoints = 0 == iteration
-            ? ElevationFixer.INSTANCE.apply(sortedPoints)
-            : sortedPoints;
+                ? ElevationFixer.INSTANCE.apply(sortedPoints)
+                : sortedPoints;
 
         final long eleTs = System.currentTimeMillis();
         final SortedSet<Waypoint> augmentedPoints
-            = PointsAugmenter.INSTANCE.apply(elePoints);
+                = PointsAugmenter.INSTANCE.apply(elePoints);
 
         if (removeIdle) {
             final SortedSet<Waypoint> activePoints = augmentedPoints.stream().
-                filter(Waypoint::isActive).collect(Collectors.toCollection(
-                        TreeSet::new));
+                    filter(Waypoint::isActive).collect(Collectors.toCollection(
+                                    TreeSet::new));
             LOGGER.info(Markers.MODEL.getMarker(), "{} | {} | Removed {} idle"
-                + " points from trail", Actions.ANALYSE,
-                StatusCodes.OK.getCode(),
-                (augmentedPoints.size() - activePoints.size()));
+                    + " points from trail", Actions.ANALYSE,
+                    StatusCodes.OK.getCode(),
+                    (augmentedPoints.size() - activePoints.size()));
             augmentedPoints.clear();
             augmentedPoints.addAll(PointsAugmenter.INSTANCE.apply(activePoints));
         }
 
         final long augmentTs = System.currentTimeMillis();
         final TrailStatistics trailStatistics
-            = StatisticsProvider.INSTANCE.apply(augmentedPoints);
+                = StatisticsProvider.INSTANCE.apply(augmentedPoints);
 
         final long statsTs = System.currentTimeMillis();
         augmentTrail(trailStatistics, augmentedPoints);
         final long guessTs = System.currentTimeMillis();
 
         LOGGER.info(Markers.PERFORMANCE.getMarker(), "{} | {} | Performed trail"
-            + " analysis in {} ms (Elevation data: {} - Augment points: {} - "
-            + "Compute stats: {} - Reverse geocoding: {})", Actions.ANALYSE,
-            StatusCodes.OK.getCode(), guessTs - start, eleTs - start, augmentTs
-            - eleTs, statsTs - augmentTs, guessTs - statsTs);
+                + " analysis in {} ms (Elevation data: {} - Augment points: {} - "
+                + "Compute stats: {} - Reverse geocoding: {})", Actions.ANALYSE,
+                StatusCodes.OK.getCode(), guessTs - start, eleTs - start, augmentTs
+                - eleTs, statsTs - augmentTs, guessTs - statsTs);
         if (null == id) {
             id = UUID.randomUUID();
         }
         return new TrailImpl(getName(), getDescription(), getLinks(),
-            augmentedPoints, countries, rating, difficultyRating, activity,
-            trailStatistics, id);
+                augmentedPoints, countries, rating, difficultyRating, activity,
+                trailStatistics, id);
     }
 
     private void validateTrail(final Trail trail) {
         final Set<ConstraintViolation<Trail>> violations
-            = ValidationService.INSTANCE.getValidator().validate(trail);
+                = ValidationService.INSTANCE.getValidator().validate(trail);
         if (violations.isEmpty()) {
             LOGGER.debug(Markers.MODEL.getMarker(), "{} | {} | Built {}",
-                Actions.CREATE, StatusCodes.OK.getCode(), trail);
+                    Actions.CREATE, StatusCodes.OK.getCode(), trail);
         } else {
             final StringBuilder msg = new StringBuilder();
             for (final ConstraintViolation<Trail> violation : violations) {
@@ -283,28 +283,29 @@ public final class TrailBuilder extends DescribableBuilder<TrailBuilder>
             }
             final String errorMsg = msg.toString();
             LOGGER.warn(Markers.MODEL.getMarker(), "{} | {} | Error"
-                + " validating trail:  {}", Actions.CREATE,
-                StatusCodes.SYNTAX_ERROR.getCode(), errorMsg);
+                    + " validating trail:  {}", Actions.CREATE,
+                    StatusCodes.SYNTAX_ERROR.getCode(), errorMsg);
             throw new ValidationException(errorMsg);
         }
     }
 
     private void augmentTrail(final TrailStatistics stats,
-        final SortedSet<Waypoint> points) {
+            final SortedSet<Waypoint> points) {
         if (null == activity && null != stats) {
-            activity = ActivityGuesser.INSTANCE.apply(stats.getSpeedSummary());
+            activity = ActivityGuesser.INSTANCE.apply(stats.getSpeedSummary(),
+                    stats.getDistanceSummary());
         }
         if (null == difficultyRating && null != stats) {
             final Level userLevel = Level.valueOf(Preferences.userRoot().node(
-                "ws.sosna.pinetrail.UserSettings").get("level",
-                    "INTERMEDIATE"));
+                    "ws.sosna.pinetrail.UserSettings").get("level",
+                            "INTERMEDIATE"));
             LOGGER.info(Markers.MODEL.getMarker(), "{} | {} | {}",
-                Actions.ANALYSE, StatusCodes.OK.getCode(),
-                "User level set to " + userLevel);
+                    Actions.ANALYSE, StatusCodes.OK.getCode(),
+                    "User level set to " + userLevel);
             difficultyRating = activity.getDifficultyRating(userLevel,
-                stats.getDistanceSummary(),
-                stats.getElevationDifferenceSummary(),
-                points.first().getTime(), points.last().getTime());
+                    stats.getDistanceSummary(),
+                    stats.getElevationDifferenceSummary(),
+                    points.first().getTime(), points.last().getTime());
         }
         if (null == countries || countries.isEmpty()) {
             countries = CountryGuesser.INSTANCE.apply(points);
@@ -315,12 +316,12 @@ public final class TrailBuilder extends DescribableBuilder<TrailBuilder>
         final Set<Waypoint> outliers = new LinkedHashSet<>();
         if (null != trail.getStatistics()) {
             outliers.addAll(trail.getStatistics().getSpeedSummary().
-                getOutliers());
+                    getOutliers());
             outliers.addAll(trail.getStatistics().getGradeSummary().
-                getOutliers());
+                    getOutliers());
             if (outliers.size() > 0) {
                 final List<Waypoint> cleanPoints
-                    = new ArrayList<>(trail.getWaypoints());
+                        = new ArrayList<>(trail.getWaypoints());
                 final Set<Waypoint> remove = new LinkedHashSet<>();
                 for (final Waypoint outlier : outliers) {
                     final int index = cleanPoints.indexOf(outlier);
@@ -334,10 +335,10 @@ public final class TrailBuilder extends DescribableBuilder<TrailBuilder>
                 outliers.addAll(remove);
                 cleanPoints.removeAll(outliers);
                 LOGGER.info(Markers.MODEL.getMarker(), "{} | {} | {}",
-                    Actions.ANALYSE, StatusCodes.NOT_ACCEPTABLE.getCode(),
-                    outliers.size() + " points (outliers and their neighbours) "
-                    + "have been removed. The analysis will be performed "
-                    + "again.");
+                        Actions.ANALYSE, StatusCodes.NOT_ACCEPTABLE.getCode(),
+                        outliers.size() + " points (outliers and their neighbours) "
+                        + "have been removed. The analysis will be performed "
+                        + "again.");
                 points = new LinkedHashSet<>(cleanPoints);
             }
         }
@@ -345,7 +346,7 @@ public final class TrailBuilder extends DescribableBuilder<TrailBuilder>
     }
 
     private static final class TrailImpl
-        extends DescribableImpl implements Trail {
+            extends DescribableImpl implements Trail {
 
         private static final long serialVersionUID = -5323040838868491171L;
         private final SortedSet<Waypoint> points;
@@ -358,21 +359,21 @@ public final class TrailBuilder extends DescribableBuilder<TrailBuilder>
         private final UUID id;
 
         TrailImpl(final String name, final String description,
-            final Set<Link> links, final SortedSet<Waypoint> points,
-            final Set<String> countries, final int rating,
-            final Integer difficultyRating, final Activity activity,
-            final TrailStatistics stats, final UUID id) {
+                final Set<Link> links, final SortedSet<Waypoint> points,
+                final Set<String> countries, final int rating,
+                final Integer difficultyRating, final Activity activity,
+                final TrailStatistics stats, final UUID id) {
             super(name, description, links);
             this.points = Collections.unmodifiableSortedSet(points);
             this.difficultyRating = difficultyRating;
             this.activity = activity;
             this.countries = Collections.unmodifiableSet(
-                new LinkedHashSet<>(countries));
+                    new LinkedHashSet<>(countries));
             this.rating = rating;
             this.stats = stats;
             this.id = id;
             hashCode = Objects.hash(super.hashCode(), this.points,
-                difficultyRating, activity, countries, rating, id);
+                    difficultyRating, activity, countries, rating, id);
         }
 
         @Override
@@ -418,11 +419,11 @@ public final class TrailBuilder extends DescribableBuilder<TrailBuilder>
             }
             final Trail other = (Trail) obj;
             return this.points.equals(other.getWaypoints())
-                && difficultyRating.equals(other.getDifficultyRating())
-                && rating == other.getRating()
-                && activity == other.getActivity()
-                && countries.equals(other.getCountries())
-                && id.equals(other.getId());
+                    && difficultyRating.equals(other.getDifficultyRating())
+                    && rating == other.getRating()
+                    && activity == other.getActivity()
+                    && countries.equals(other.getCountries())
+                    && id.equals(other.getId());
         }
 
         @Override
@@ -433,11 +434,11 @@ public final class TrailBuilder extends DescribableBuilder<TrailBuilder>
         @Override
         public String toString() {
             return "Trail{id=" + id.toString() + ", points=" + points
-                + ", name=" + getName() + ", description=" + getDescription()
-                + ", links=" + getLinks() + ", difficulty rating="
-                + difficultyRating + ", activity=" + activity + ", countries="
-                + countries + ", rating=" + rating + ", statistics="
-                + stats + '}';
+                    + ", name=" + getName() + ", description=" + getDescription()
+                    + ", links=" + getLinks() + ", difficulty rating="
+                    + difficultyRating + ", activity=" + activity + ", countries="
+                    + countries + ", rating=" + rating + ", statistics="
+                    + stats + '}';
         }
 
         private Object writeReplace() {
@@ -445,7 +446,7 @@ public final class TrailBuilder extends DescribableBuilder<TrailBuilder>
         }
 
         private void readObject(final ObjectInputStream stream)
-            throws InvalidObjectException {
+                throws InvalidObjectException {
             throw new InvalidObjectException("Proxy required");
         }
 
@@ -479,7 +480,7 @@ public final class TrailBuilder extends DescribableBuilder<TrailBuilder>
 
             private Object readResolve() {
                 return new TrailImpl(name, description, links, points,
-                    countries, rating, difficultyRating, activity, stats, id);
+                        countries, rating, difficultyRating, activity, stats, id);
             }
         }
     }
