@@ -18,7 +18,7 @@ package ws.sosna.pinetrail.model;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ws.sosna.pinetrail.utils.logging.Actions;
@@ -30,7 +30,7 @@ import ws.sosna.pinetrail.utils.logging.StatusCodes;
  *
  * @author Xavier Sosnovsky
  */
-enum ActivityGuesser implements Function<Statistics, Activity> {
+enum ActivityGuesser implements BiFunction<Statistics, Statistics, Activity> {
 
     /**
      * Singleton that returns an instance of a ActivityGuesser.
@@ -39,6 +39,7 @@ enum ActivityGuesser implements Function<Statistics, Activity> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(
             ActivityGuesser.class);
+    private static final double MARATHON = 42195;
 
     /**
      * Determines the activity (hike, run, etc.) out of the provided speed
@@ -53,20 +54,27 @@ enum ActivityGuesser implements Function<Statistics, Activity> {
      * @return the trail activity
      */
     @Override
-    public Activity apply(final Statistics speedStats) {
+    public Activity apply(final Statistics speedStats, final Statistics distanceStats) {
+        final double distance = distanceStats.getActive().getSum();
         final double speed = speedStats.getActive().getMean();
-        final Map<Double, Activity> speeds =
-                new HashMap<>(Activity.values().length);
-        for (final Activity activity : Activity.values()) {
-            speeds.put(Math.abs(speed - activity.getAverageSpeed()), activity);
-        }
-        final Double minValue =
-                speeds.keySet().stream().min(Double::compare).get();
-        final Activity activity = speeds.get(minValue);
-        LOGGER.debug(Markers.MODEL.getMarker(), "{} | {} | Guessed activity: {}"
+        if (distance > MARATHON) {
+            return Activity.BIKING;
+        } else if (distance > 20000 & speed > 10) {
+            return Activity.BIKING;
+        } else {
+            final Map<Double, Activity> speeds
+                    = new HashMap<>(Activity.values().length);
+            for (final Activity activity : Activity.values()) {
+                speeds.put(Math.abs(speed - activity.getAverageSpeed()), activity);
+            }
+            final Double minValue
+                    = speeds.keySet().stream().min(Double::compare).get();
+            final Activity activity = speeds.get(minValue);
+            LOGGER.debug(Markers.MODEL.getMarker(), "{} | {} | Guessed activity: {}"
                     + " (difference with average: {})", Actions.ANALYSE,
                     StatusCodes.OK.getCode(), activity,
                     new DecimalFormat("#0.0").format(minValue));
-        return activity;
+            return activity;
+        }
     }
 }
