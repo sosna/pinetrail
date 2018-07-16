@@ -1,14 +1,5 @@
 ext.projectIds = ['group': 'ws.sosna.pinetrail', 'version': '1.0.0-SNAPSHOT']
 
-apply plugin: 'sonar-runner'
-
-sonarRunner {
-    sonarProperties {
-        property 'sonar.projectName', 'pinetrail'
-        property 'sonar.projectDescription', 'Description to come here'
-    }
-}
-
 allprojects {
     group = projectIds.group
     version = projectIds.version
@@ -31,12 +22,6 @@ buildscript {
 
 subprojects {
     ext.configDir = new File(rootDir, 'config')
-    
-    sonarRunner {
-        sonarProperties {
-            property 'sonar.sourceEncoding', 'UTF-8'
-        }
-    }
     
     apply plugin: 'java'    
     apply from: "$rootDir/gradle/jacoco.gradle"
