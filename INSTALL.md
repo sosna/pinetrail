@@ -44,7 +44,7 @@ A Gradle wrapper is available directly under the Pinetrail directory. The
 wrapper allows you to easily compile the software with just one command:
 
 ```
-> ./gradlew installApp
+> ./gradlew installDist
 ```
 
 The Gradle wrapper will take care of downloading all necessary dependencies and
