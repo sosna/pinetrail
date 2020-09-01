@@ -15,9 +15,11 @@
  */
 package ws.sosna.pinetrail.model;
 
+import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
@@ -30,6 +32,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -149,7 +152,6 @@ enum ElevationFixer implements Function<SortedSet<Waypoint>, SortedSet<Waypoint>
             = "outFormat=xml"
             + "&shapeFormat=cmp6"
             + "&useFilter=true"
-            + "&outShapeFormat=none"
             + "&latLngCollection=" + compressedInput;
         final byte[] postData = params.getBytes(StandardCharsets.UTF_8);
         final int postDataLength = postData.length;
