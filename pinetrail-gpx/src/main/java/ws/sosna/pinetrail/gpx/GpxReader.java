@@ -15,6 +15,8 @@
  */
 package ws.sosna.pinetrail.gpx;
 
+import io.jenetics.jpx.GPX;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -28,71 +30,75 @@ import ws.sosna.pinetrail.utils.logging.Markers;
 import ws.sosna.pinetrail.utils.logging.StatusCodes;
 
 /**
- * Abstract class for readers of GPX files that map the extracted information to
- * the Pinetrail model.
+ * Reader of GPX files that map the extracted information to the Pinetrail model.
  *
  * @author Xavier Sosnovsky
  */
-abstract class GpxReader<T extends Object> implements Reader {
+class GpxReader implements Reader {
 
-    private static final Logger LOGGER
-        = LoggerFactory.getLogger(GpxReader.class);
-    protected boolean groupSubTrails;
+  private static final Logger LOGGER = LoggerFactory.getLogger(GpxReader.class);
+  private boolean groupSubTrails;
+  private final GPX.Version version;
 
-    protected GpxReader() {
-        super();
-        groupSubTrails = false;
+  GpxReader(final GPX.Version version) {
+    super();
+    groupSubTrails = false;
+    this.version = version;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Reader configure(final ReaderSettings settings) {
+    groupSubTrails = settings.groupSubTrails();
+    return this;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Set<Trail> apply(final Path fileLocation) {
+    try {
+      LOGGER.info(
+          Markers.IO.getMarker(),
+          "{} | {} | {}.",
+          Actions.PARSE,
+          StatusCodes.OK.getCode(),
+          "Started parsing GPX file " + fileLocation.toAbsolutePath().normalize().toString());
+      final long start = System.currentTimeMillis();
+      final GPX gpx;
+      try {
+        gpx = GPX.reader(version).read(fileLocation);
+        final long parsingTime = System.currentTimeMillis() - start;
+        final long startMapping = System.currentTimeMillis();
+        final Set<Trail> trails = new GpxToPinetrailMapper(groupSubTrails).mapToTrails(gpx);
+        final long end = System.currentTimeMillis();
+        LOGGER.info(
+            Markers.PERFORMANCE.getMarker(),
+            "{} | {} | {}",
+            Actions.PARSE,
+            StatusCodes.OK.getCode(),
+            "Processed "
+                + fileLocation.toAbsolutePath().normalize().toString()
+                + " in "
+                + (end - start)
+                + "ms (parsing: "
+                + parsingTime
+                + " - mapping: "
+                + (end - startMapping)
+                + ")");
+        return trails;
+      } catch (IOException e) {
+        throw new ExecutionError(
+            "Bugger", e, Markers.IO.getMarker(), Actions.GET, StatusCodes.SYNTAX_ERROR);
+      }
+
+    } catch (final ExecutionError e) {
+      LOGGER.error(
+          e.getMarker(),
+          "{} | {} | {}.",
+          e.getAction(),
+          e.getErrorCode().getCode(),
+          e.getMessage() + (null == e.getCause() ? "" : ": " + e.getCause().getMessage()));
+      throw e;
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Reader configure(final ReaderSettings settings) {
-        groupSubTrails = settings.groupSubTrails();
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Set<Trail> apply(final Path fileLocation) {
-        try {
-            LOGGER.info(Markers.IO.getMarker(), "{} | {} | {}.",
-                Actions.PARSE, StatusCodes.OK.getCode(), "Started parsing "
-                + "GPX file " + fileLocation.toAbsolutePath().normalize().
-                toString());
-            final long start = System.currentTimeMillis();
-            final T gpx = getExtractor().parseXml(fileLocation);
-            final long parsingTime = System.currentTimeMillis() - start;
-            final long startMapping = System.currentTimeMillis();
-            final Set<Trail> trails
-                = getMapper(groupSubTrails).mapToTrails(gpx);
-            final long end = System.currentTimeMillis();
-            LOGGER.info(Markers.PERFORMANCE.getMarker(), "{} | {} | {}",
-                Actions.PARSE, StatusCodes.OK.getCode(), "Processed "
-                + fileLocation.toAbsolutePath().normalize().toString() + " in "
-                + (end - start) + "ms (parsing: "
-                + parsingTime + " - mapping: " + (end - startMapping) + ")");
-            return trails;
-        } catch (final ExecutionError e) {
-            LOGGER.error(e.getMarker(), "{} | {} | {}.", e.getAction(), e.
-                getErrorCode().getCode(), e.getMessage() + (null == e.getCause()
-                    ? "" : ": " + e.getCause().getMessage()));
-            throw e;
-        }
-    }
-
-    /**
-     * @return the class that will extract the Java classes from the supplied
-     * XML
-     */
-    abstract GpxExtractor<T> getExtractor();
-
-    /**
-     * @param groupSubTrails whether segments should be grouped.
-     * @return the class that will map the GPX classes to the Pinetrail ones.
-     */
-    abstract JaxbToPinetrailMapper<T> getMapper(final boolean groupSubTrails);
+  }
 }

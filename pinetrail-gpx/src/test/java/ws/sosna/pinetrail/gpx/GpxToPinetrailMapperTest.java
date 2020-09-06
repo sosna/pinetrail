@@ -15,7 +15,8 @@
  */
 package ws.sosna.pinetrail.gpx;
 
-import com.topografix.gpx._1._1.GpxType;
+import io.jenetics.jpx.GPX;
+import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ import ws.sosna.pinetrail.model.Waypoint;
 /**
  * @author Xavier Sosnovsky
  */
-public class Gpx11ToPinetrailMapperTest {
+public class GpxToPinetrailMapperTest {
 
     private static Boolean keepOutliers;
     private static Boolean keepIdlePoints;
@@ -66,13 +67,13 @@ public class Gpx11ToPinetrailMapperTest {
     }
 
     @Test
-    public void mapGpxType() throws InterruptedException {
+    public void mapGpxType() throws InterruptedException, IOException {
         Preferences.userRoot().node(
             "ws.sosna.pinetrail.UserSettings").put("level", "INTERMEDIATE");
-        final GpxType gpx = new Gpx11Extractor().parseXml(
+        final GPX gpx = GPX.read(
             FileSystems.getDefault().getPath(".",
                 "src/test/resources/2014-05-18_Wispertal.gpx"));
-        final Gpx11ToPinetrailMapper mapper = new Gpx11ToPinetrailMapper(false);
+        final GpxToPinetrailMapper mapper = new GpxToPinetrailMapper(false);
         final Set<Trail> trails = mapper.mapToTrails(gpx);
         assertEquals(1, trails.size());
         for (final Trail trail : trails) {
@@ -96,11 +97,11 @@ public class Gpx11ToPinetrailMapperTest {
     }
 
     @Test
-    public void ignoreInvalidPoint() throws InterruptedException {
-        final GpxType gpx = new Gpx11Extractor().parseXml(
+    public void ignoreInvalidPoint() throws InterruptedException, IOException {
+        final GPX gpx = GPX.read(
             FileSystems.getDefault().getPath(".",
                 "src/test/resources/2014-05-18_Wispertal_NotValidBusinessRules.gpx"));
-        final Gpx11ToPinetrailMapper mapper = new Gpx11ToPinetrailMapper(false);
+        final GpxToPinetrailMapper mapper = new GpxToPinetrailMapper(false);
         final Set<Trail> trails = mapper.mapToTrails(gpx);
         assertEquals(1, trails.size());
         for (final Trail trail : trails) {
@@ -122,11 +123,11 @@ public class Gpx11ToPinetrailMapperTest {
     }
 
      @Test
-    public void ignoreMissingElevation() throws InterruptedException {
-        final GpxType gpx = new Gpx11Extractor().parseXml(
+    public void ignoreMissingElevation() throws InterruptedException, IOException {
+         final GPX gpx = GPX.read(
             FileSystems.getDefault().getPath(".",
                 "src/test/resources/2014-05-18_Wispertal_MissingElevation.gpx"));
-        final Gpx11ToPinetrailMapper mapper = new Gpx11ToPinetrailMapper(false);
+        final GpxToPinetrailMapper mapper = new GpxToPinetrailMapper(false);
         final Set<Trail> trails = mapper.mapToTrails(gpx);
         assertEquals(1, trails.size());
         for (final Trail trail : trails) {
@@ -148,11 +149,11 @@ public class Gpx11ToPinetrailMapperTest {
     }
 
     @Test
-    public void ignoreInvalidTrail() throws InterruptedException {
-        final GpxType gpx = new Gpx11Extractor().parseXml(
+    public void ignoreInvalidTrail() throws InterruptedException, IOException {
+        final GPX gpx = GPX.read(
             FileSystems.getDefault().getPath(".",
                 "src/test/resources/2014-05-18_Wispertal_NotValidTrail.gpx"));
-        final Gpx11ToPinetrailMapper mapper = new Gpx11ToPinetrailMapper(false);
+        final GpxToPinetrailMapper mapper = new GpxToPinetrailMapper(false);
         final Set<Trail> trails = mapper.mapToTrails(gpx);
         assertTrue(trails.isEmpty());
     }
