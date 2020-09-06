@@ -64,33 +64,29 @@ class GpxReader implements Reader {
           StatusCodes.OK.getCode(),
           "Started parsing GPX file " + fileLocation.toAbsolutePath().normalize().toString());
       final long start = System.currentTimeMillis();
-      final GPX gpx;
-      try {
-        gpx = GPX.reader(version).read(fileLocation);
-        final long parsingTime = System.currentTimeMillis() - start;
-        final long startMapping = System.currentTimeMillis();
-        final Set<Trail> trails = new GpxToPinetrailMapper(groupSubTrails).mapToTrails(gpx);
-        final long end = System.currentTimeMillis();
-        LOGGER.info(
-            Markers.PERFORMANCE.getMarker(),
-            "{} | {} | {}",
-            Actions.PARSE,
-            StatusCodes.OK.getCode(),
-            "Processed "
-                + fileLocation.toAbsolutePath().normalize().toString()
-                + " in "
-                + (end - start)
-                + "ms (parsing: "
-                + parsingTime
-                + " - mapping: "
-                + (end - startMapping)
-                + ")");
-        return trails;
-      } catch (IOException e) {
-        throw new ExecutionError(
-            "Bugger", e, Markers.IO.getMarker(), Actions.GET, StatusCodes.SYNTAX_ERROR);
-      }
-
+      final GPX gpx = GPX.reader(version).read(fileLocation);
+      final long parsingTime = System.currentTimeMillis() - start;
+      final long startMapping = System.currentTimeMillis();
+      final Set<Trail> trails = new GpxToPinetrailMapper(groupSubTrails).mapToTrails(gpx);
+      final long end = System.currentTimeMillis();
+      LOGGER.info(
+          Markers.PERFORMANCE.getMarker(),
+          "{} | {} | {}",
+          Actions.PARSE,
+          StatusCodes.OK.getCode(),
+          "Processed "
+              + fileLocation.toAbsolutePath().normalize().toString()
+              + " in "
+              + (end - start)
+              + "ms (parsing: "
+              + parsingTime
+              + " - mapping: "
+              + (end - startMapping)
+              + ")");
+      return trails;
+    } catch (IOException e) {
+      throw new ExecutionError(
+          "Could not read file", e, Markers.IO.getMarker(), Actions.GET, StatusCodes.SYNTAX_ERROR);
     } catch (final ExecutionError e) {
       LOGGER.error(
           e.getMarker(),
