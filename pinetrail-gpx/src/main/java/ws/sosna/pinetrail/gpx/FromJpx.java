@@ -46,14 +46,14 @@ import ws.sosna.pinetrail.utils.logging.StatusCodes;
  *
  * @author Xavier Sosnovsky
  */
-final class GpxToPinetrailMapper {
+final class FromJpx {
 
   private final ResourceBundle logMessages;
   private final boolean groupSubTrails;
   private static final org.slf4j.Logger LOGGER =
-      LoggerFactory.getLogger(GpxToPinetrailMapper.class);
+      LoggerFactory.getLogger(FromJpx.class);
 
-  GpxToPinetrailMapper(final boolean groupSubTrails) {
+  FromJpx(final boolean groupSubTrails) {
     super();
     logMessages = ResourceBundle.getBundle("GpxLogMessages", Locale.getDefault());
     this.groupSubTrails = groupSubTrails;

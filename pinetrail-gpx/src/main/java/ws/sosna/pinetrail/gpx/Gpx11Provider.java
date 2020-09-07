@@ -46,7 +46,6 @@ public final class Gpx11Provider implements ReaderProvider, WriterProvider {
   /** {@inheritDoc} */
   @Override
   public Writer newWriter(final Formats format) {
-    // return Formats.GPX_1_1 == format ? new Gpx11Writer() : null;
-    return null;
+    return Formats.GPX_1_1 == format ? new Gpx11Writer() : null;
   }
 }

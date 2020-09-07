@@ -67,7 +67,7 @@ class GpxReader implements Reader {
       final GPX gpx = GPX.reader(version).read(fileLocation);
       final long parsingTime = System.currentTimeMillis() - start;
       final long startMapping = System.currentTimeMillis();
-      final Set<Trail> trails = new GpxToPinetrailMapper(groupSubTrails).mapToTrails(gpx);
+      final Set<Trail> trails = new FromJpx(groupSubTrails).mapToTrails(gpx);
       final long end = System.currentTimeMillis();
       LOGGER.info(
           Markers.PERFORMANCE.getMarker(),

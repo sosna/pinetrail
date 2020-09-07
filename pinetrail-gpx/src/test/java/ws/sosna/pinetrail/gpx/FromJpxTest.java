@@ -34,7 +34,7 @@ import ws.sosna.pinetrail.model.Waypoint;
 /**
  * @author Xavier Sosnovsky
  */
-public class GpxToPinetrailMapperTest {
+public class FromJpxTest {
 
     private static Boolean keepOutliers;
     private static Boolean keepIdlePoints;
@@ -73,7 +73,7 @@ public class GpxToPinetrailMapperTest {
         final GPX gpx = GPX.read(
             FileSystems.getDefault().getPath(".",
                 "src/test/resources/2014-05-18_Wispertal.gpx"));
-        final GpxToPinetrailMapper mapper = new GpxToPinetrailMapper(false);
+        final FromJpx mapper = new FromJpx(false);
         final Set<Trail> trails = mapper.mapToTrails(gpx);
         assertEquals(1, trails.size());
         for (final Trail trail : trails) {
@@ -101,7 +101,7 @@ public class GpxToPinetrailMapperTest {
         final GPX gpx = GPX.read(
             FileSystems.getDefault().getPath(".",
                 "src/test/resources/2014-05-18_Wispertal_NotValidBusinessRules.gpx"));
-        final GpxToPinetrailMapper mapper = new GpxToPinetrailMapper(false);
+        final FromJpx mapper = new FromJpx(false);
         final Set<Trail> trails = mapper.mapToTrails(gpx);
         assertEquals(1, trails.size());
         for (final Trail trail : trails) {
@@ -127,7 +127,7 @@ public class GpxToPinetrailMapperTest {
          final GPX gpx = GPX.read(
             FileSystems.getDefault().getPath(".",
                 "src/test/resources/2014-05-18_Wispertal_MissingElevation.gpx"));
-        final GpxToPinetrailMapper mapper = new GpxToPinetrailMapper(false);
+        final FromJpx mapper = new FromJpx(false);
         final Set<Trail> trails = mapper.mapToTrails(gpx);
         assertEquals(1, trails.size());
         for (final Trail trail : trails) {
@@ -153,7 +153,7 @@ public class GpxToPinetrailMapperTest {
         final GPX gpx = GPX.read(
             FileSystems.getDefault().getPath(".",
                 "src/test/resources/2014-05-18_Wispertal_NotValidTrail.gpx"));
-        final GpxToPinetrailMapper mapper = new GpxToPinetrailMapper(false);
+        final FromJpx mapper = new FromJpx(false);
         final Set<Trail> trails = mapper.mapToTrails(gpx);
         assertTrue(trails.isEmpty());
     }
