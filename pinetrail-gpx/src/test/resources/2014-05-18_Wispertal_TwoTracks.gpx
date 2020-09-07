@@ -3162,9 +3162,6 @@
         <link href="http://test.com">
             <text>Some test</text>
         </link>
-        <link href="1;2:3\/">
-            <text>Wrong lin</text>
-        </link>
         <trkseg>
             <trkpt lat="50.1181208342" lon="7.9630853701">
                 <ele>214.03</ele>

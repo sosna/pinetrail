@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="system">
-    <system systemId="http://www.topografix.com/GPX/1/1/gpx.xsd" uri="www.topografix.com/GPX/1/1/gpx.xsd"/>
-    <system systemId="http://www8.garmin.com/xmlschemas/GpxExtensionsv3.xsd" uri="www8.garmin.com/xmlschemas/GpxExtensionsv3.xsd"/>
-    <system systemId="http://www8.garmin.com/xmlschemas/WaypointExtensionv1.xsd" uri="www8.garmin.com/xmlschemas/WaypointExtensionv1.xsd"/>
-    <system systemId="http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd" uri="www8.garmin.com/xmlschemas/TrackPointExtensionv1.xsd"/>
-    <system systemId="http://www.topografix.com/GPX/1/0" uri="www.topografix.com/gpx.asp"/>
-</catalog>

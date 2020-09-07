@@ -239,7 +239,6 @@ final class FromJpx {
     return trails;
   }
 
-  @SuppressWarnings("PMD.LawOfDemeter")
   private Waypoint handlePoint(final WayPoint wpt) {
     final Set<Link> links =
         wpt.getLinks().stream()
@@ -259,7 +258,6 @@ final class FromJpx {
         links);
   }
 
-  @SuppressWarnings("PMD.LawOfDemeter")
   private Link handleLink(final io.jenetics.jpx.Link link) {
     try {
       return new LinkBuilder(link.getText().orElse(null), new URI(link.getHref().toString())).build();
