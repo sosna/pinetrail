@@ -20,13 +20,10 @@ package ws.sosna.pinetrail.model;
  * Contract to be implemented by builders of model classes.
  *
  * @author Xavier Sosnovsky
- *
  * @param <T> the type of artefact to be built by the builder
  */
 interface Builder<T> {
 
-    /**
-     * @return An instance of the T interface.
-     */
-    T build();
+  /** @return An instance of the T interface. */
+  T build();
 }

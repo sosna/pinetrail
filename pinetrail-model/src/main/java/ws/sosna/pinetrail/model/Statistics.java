@@ -20,57 +20,56 @@ import java.util.Set;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
 /**
- * Provides statistics about the trail for a particular aspect, such as
- * distance, elevation or speed.
+ * Provides statistics about the trail for a particular aspect, such as distance, elevation or
+ * speed.
  *
  * @author Xavier Sosnovsky
  */
-public interface Statistics extends Serializable  {
+public interface Statistics extends Serializable {
 
-    /**
-     * Get the statistics for all the points in the trail.
-     *
-     * @return the statistics for all the points in the trail
-     */
-    SummaryStatistics getAll();
+  /**
+   * Get the statistics for all the points in the trail.
+   *
+   * @return the statistics for all the points in the trail
+   */
+  SummaryStatistics getAll();
 
-    /**
-     * Get the statistics for all the points in the trail where the person
-     * recording the trail was considered to be in movement.
-     *
-     * @return the statistics for all the active points in the trail
-     */
-    SummaryStatistics getActive();
+  /**
+   * Get the statistics for all the points in the trail where the person recording the trail was
+   * considered to be in movement.
+   *
+   * @return the statistics for all the active points in the trail
+   */
+  SummaryStatistics getActive();
 
-    /**
-     * Get the statistics for all the points in the trail where the person
-     * recording the trail was considered to be going up.
-     *
-     * @return the statistics for all the active points going up in the trail
-     */
-    SummaryStatistics getActiveUp();
+  /**
+   * Get the statistics for all the points in the trail where the person recording the trail was
+   * considered to be going up.
+   *
+   * @return the statistics for all the active points going up in the trail
+   */
+  SummaryStatistics getActiveUp();
 
-    /**
-     * Get the statistics for all the points in the trail where the person
-     * recording the trail was considered to be going down.
-     *
-     * @return the statistics for all the active points going down in the trail
-     */
-    SummaryStatistics getActiveDown();
+  /**
+   * Get the statistics for all the points in the trail where the person recording the trail was
+   * considered to be going down.
+   *
+   * @return the statistics for all the active points going down in the trail
+   */
+  SummaryStatistics getActiveDown();
 
-    /**
-     * Get the statistics for all the points in the trail where the person
-     * recording the trail was considered to be going neither up nor down.
-     *
-     * @return the statistics for all the active in the trail that are neither
-     * up nor down
-     */
-    SummaryStatistics getActiveFlat();
+  /**
+   * Get the statistics for all the points in the trail where the person recording the trail was
+   * considered to be going neither up nor down.
+   *
+   * @return the statistics for all the active in the trail that are neither up nor down
+   */
+  SummaryStatistics getActiveFlat();
 
-    /**
-     * Get the points that could be considered outliers in the trail.
-     *
-     * @return the points that could be considered outliers in the trail
-     */
-    Set<Waypoint> getOutliers();
+  /**
+   * Get the points that could be considered outliers in the trail.
+   *
+   * @return the points that could be considered outliers in the trail
+   */
+  Set<Waypoint> getOutliers();
 }

@@ -19,47 +19,29 @@ package ws.sosna.pinetrail.model;
 /**
  * The type of point of interest.
  *
- * <p>
- * Many waypoints simply represent a GPS recording at a certain point in time.
- * Others however represent a location worth documenting or visiting again, such
- * as a museum, a castle, a point offering a nice panoramic view, etc. A
- * {@code WaypointType} allows classifying different such points of interest by
- * type.
+ * <p>Many waypoints simply represent a GPS recording at a certain point in time. Others however
+ * represent a location worth documenting or visiting again, such as a museum, a castle, a point
+ * offering a nice panoramic view, etc. A {@code WaypointType} allows classifying different such
+ * points of interest by type.
  *
  * @author Xavier Sosnovsky
  */
 public enum WaypointType {
 
-    /**
-     * Hotel, camping, etc.
-     */
-    ACCOMMODATION,
-    /**
-     * School, university, theatre, museum, Art gallery, etc.
-     */
-    EDUCATIONAL_BUILDING,
-    /**
-     * Restaurant, bar, etc.
-     */
-    FOOD_AND_DRINK,
-    /**
-     * Town hall, parliament, palace, etc.
-     */
-    GOVERNMENT_BUILDING,
-    /**
-     * Church, monastery, cathedral, etc.
-     */
-    RELIGIOUS_BUILDING,
-    /**
-     * Airport, bus or train stations, etc.
-     */
-    TRANSPORT_BUILDING,
-    /**
-     * Castle, watchtower, citadel, fortifications, etc.
-     */
-    MILITARY_BUILDING,
-    /**
-     * A point offering a nice panoramic view.
-     */
-    VIEWPOINT;
+  /** Hotel, camping, etc. */
+  ACCOMMODATION,
+  /** School, university, theatre, museum, Art gallery, etc. */
+  EDUCATIONAL_BUILDING,
+  /** Restaurant, bar, etc. */
+  FOOD_AND_DRINK,
+  /** Town hall, parliament, palace, etc. */
+  GOVERNMENT_BUILDING,
+  /** Church, monastery, cathedral, etc. */
+  RELIGIOUS_BUILDING,
+  /** Airport, bus or train stations, etc. */
+  TRANSPORT_BUILDING,
+  /** Castle, watchtower, citadel, fortifications, etc. */
+  MILITARY_BUILDING,
+  /** A point offering a nice panoramic view. */
+  VIEWPOINT
 }

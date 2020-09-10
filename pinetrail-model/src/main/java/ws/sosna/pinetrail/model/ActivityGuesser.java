@@ -32,49 +32,45 @@ import ws.sosna.pinetrail.utils.logging.StatusCodes;
  */
 enum ActivityGuesser implements BiFunction<Statistics, Statistics, Activity> {
 
-    /**
-     * Singleton that returns an instance of a ActivityGuesser.
-     */
-    INSTANCE;
+  /** Singleton that returns an instance of a ActivityGuesser. */
+  INSTANCE;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(
-            ActivityGuesser.class);
-    private static final double MARATHON = 42195;
+  private static final Logger LOGGER = LoggerFactory.getLogger(ActivityGuesser.class);
+  private static final double MARATHON = 42195;
 
-    /**
-     * Determines the activity (hike, run, etc.) out of the provided speed
-     * statistics.
-     *
-     * <p>
-     * The average value of the provided speed statistics will be compared with
-     * the expected average speed for known activities and the activity with the
-     * smallest difference will be returned.
-     *
-     * @param speedStats the speed statistics for the trail
-     * @return the trail activity
-     */
-    @Override
-    public Activity apply(final Statistics speedStats, final Statistics distanceStats) {
-        final double distance = distanceStats.getActive().getSum();
-        final double speed = speedStats.getActive().getMean();
-        if (distance > MARATHON) {
-            return Activity.BIKING;
-        } else if (distance > 20000 & speed > 10) {
-            return Activity.BIKING;
-        } else {
-            final Map<Double, Activity> speeds
-                    = new HashMap<>(Activity.values().length);
-            for (final Activity activity : Activity.values()) {
-                speeds.put(Math.abs(speed - activity.getAverageSpeed()), activity);
-            }
-            final Double minValue
-                    = speeds.keySet().stream().min(Double::compare).get();
-            final Activity activity = speeds.get(minValue);
-            LOGGER.debug(Markers.MODEL.getMarker(), "{} | {} | Guessed activity: {}"
-                    + " (difference with average: {})", Actions.ANALYSE,
-                    StatusCodes.OK.getCode(), activity,
-                    new DecimalFormat("#0.0").format(minValue));
-            return activity;
-        }
+  /**
+   * Determines the activity (hike, run, etc.) out of the provided speed statistics.
+   *
+   * <p>The average value of the provided speed statistics will be compared with the expected
+   * average speed for known activities and the activity with the smallest difference will be
+   * returned.
+   *
+   * @param speedStats the speed statistics for the trail
+   * @return the trail activity
+   */
+  @Override
+  public Activity apply(final Statistics speedStats, final Statistics distanceStats) {
+    final double distance = distanceStats.getActive().getSum();
+    final double speed = speedStats.getActive().getMean();
+    if (distance > MARATHON) {
+      return Activity.BIKING;
+    } else if (distance > 20000 & speed > 10) {
+      return Activity.BIKING;
+    } else {
+      final Map<Double, Activity> speeds = new HashMap<>(Activity.values().length);
+      for (final Activity activity : Activity.values()) {
+        speeds.put(Math.abs(speed - activity.getAverageSpeed()), activity);
+      }
+      final Double minValue = speeds.keySet().stream().min(Double::compare).get();
+      final Activity activity = speeds.get(minValue);
+      LOGGER.debug(
+          Markers.MODEL.getMarker(),
+          "{} | {} | Guessed activity: {}" + " (difference with average: {})",
+          Actions.ANALYSE,
+          StatusCodes.OK.getCode(),
+          activity,
+          new DecimalFormat("#0.0").format(minValue));
+      return activity;
     }
+  }
 }
