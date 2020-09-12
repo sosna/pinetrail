@@ -16,7 +16,6 @@
 package ws.sosna.pinetrail.gpx;
 
 import io.jenetics.jpx.GPX;
-import io.jenetics.jpx.Link;
 import io.jenetics.jpx.Track;
 import io.jenetics.jpx.TrackSegment;
 import io.jenetics.jpx.WayPoint;
@@ -82,15 +81,7 @@ final class Gpx11Writer implements Writer {
       final long start = System.currentTimeMillis();
       final List<WayPoint> pts = getPoints(trail);
       final TrackSegment seg = TrackSegment.builder().points(pts).build();
-      final List<Link> links =
-          trail.getLinks().stream().map(this::getLink).collect(Collectors.toList());
-      final Track track =
-          Track.builder()
-              .addSegment(seg)
-              .name(trail.getName())
-              .desc(trail.getDescription())
-              .links(links)
-              .build();
+      final Track track = Track.builder().addSegment(seg).build();
       final GPX gpx = GPX.builder().addTrack(track).build();
       GPX.write(gpx, location);
       final long end = System.currentTimeMillis();
@@ -171,9 +162,5 @@ final class Gpx11Writer implements Writer {
         .ele(pt.getCoordinates().getElevation())
         .time(pt.getTime())
         .build();
-  }
-
-  private Link getLink(final ws.sosna.pinetrail.model.Link ln) {
-    return Link.of(ln.getLocation(), ln.getLabel(), "text/plain");
   }
 }

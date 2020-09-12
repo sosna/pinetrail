@@ -19,8 +19,6 @@ import io.jenetics.jpx.GPX;
 import io.jenetics.jpx.Track;
 import io.jenetics.jpx.TrackSegment;
 import io.jenetics.jpx.WayPoint;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.Locale;
@@ -31,8 +29,6 @@ import java.util.stream.Collectors;
 import javax.validation.ValidationException;
 import org.slf4j.LoggerFactory;
 import ws.sosna.pinetrail.model.CoordinatesBuilder;
-import ws.sosna.pinetrail.model.Link;
-import ws.sosna.pinetrail.model.LinkBuilder;
 import ws.sosna.pinetrail.model.Trail;
 import ws.sosna.pinetrail.model.TrailBuilder;
 import ws.sosna.pinetrail.model.Waypoint;
@@ -50,8 +46,7 @@ final class FromJpx {
 
   private final ResourceBundle logMessages;
   private final boolean groupSubTrails;
-  private static final org.slf4j.Logger LOGGER =
-      LoggerFactory.getLogger(FromJpx.class);
+  private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(FromJpx.class);
 
   FromJpx(final boolean groupSubTrails) {
     super();
@@ -99,11 +94,7 @@ final class FromJpx {
     return trails;
   }
 
-  private Trail getTrail(
-      final String trailName,
-      final Set<Waypoint> points,
-      final String description,
-      final Set<Link> links) {
+  private Trail getTrail(final Set<Waypoint> points) {
     Trail trail;
     if (points.isEmpty()) {
       LOGGER.warn(
@@ -115,7 +106,7 @@ final class FromJpx {
       trail = null;
     } else {
       try {
-        trail = new TrailBuilder(trailName, points).description(description).links(links).build();
+        trail = new TrailBuilder(points).build();
         LOGGER.info(
             Markers.IO.getMarker(),
             "{} | {} | {}.",
@@ -140,23 +131,13 @@ final class FromJpx {
   }
 
   private Waypoint buildPoint(
-      final Instant time,
-      final double lon,
-      final double lat,
-      final Double ele,
-      final String name,
-      final String desc,
-      final Set<Link> links) {
+      final Instant time, final double lon, final double lat, final Double ele) {
     final CoordinatesBuilder cbld = new CoordinatesBuilder(lon, lat);
     if (null != ele) {
       cbld.elevation(ele);
     }
     try {
-      return new WaypointBuilder(time, cbld.build())
-          .name(name)
-          .description(desc)
-          .links(links)
-          .build();
+      return new WaypointBuilder(time, cbld.build()).build();
     } catch (final ValidationException e) {
       final String msg =
           "Bean validation failed. Waypoint will be "
@@ -197,19 +178,11 @@ final class FromJpx {
           StatusCodes.NOT_FOUND.getCode(),
           logMessages.getString("Error.NoSegment"));
     }
-    final Set<Link> links =
-        trk.getLinks().stream()
-            .map(this::handleLink)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toSet());
     final Set<Waypoint> points = handleAdditionalWaypoints(trk.getSegments().size() > 1, waypoints);
-    return handleSegments(trk, points, links);
+    return handleSegments(trk, points);
   }
 
-  private Set<Trail> handleSegments(
-      final Track trk, final Set<Waypoint> points, final Set<Link> links) {
-    int count = 1;
-    final String trailName = trk.getName().orElse(null);
+  private Set<Trail> handleSegments(final Track trk, final Set<Waypoint> points) {
     final Set<Trail> trails = new LinkedHashSet<>();
     for (final TrackSegment seg : trk.getSegments()) {
       final Set<Waypoint> segPoints =
@@ -222,16 +195,14 @@ final class FromJpx {
       }
       points.addAll(segPoints);
       if (!groupSubTrails) {
-        final String segName =
-            trk.getSegments().size() > 1 ? trailName + " [" + count++ + "]" : trailName;
-        final Trail trail = getTrail(segName, points, trk.getDescription().orElse(null), links);
+        final Trail trail = getTrail(points);
         if (null != trail) {
           trails.add(trail);
         }
       }
     }
     if (groupSubTrails) {
-      final Trail trail = getTrail(trailName, points, trk.getDescription().orElse(null), links);
+      final Trail trail = getTrail(points);
       if (null != trail) {
         trails.add(trail);
       }
@@ -240,41 +211,9 @@ final class FromJpx {
   }
 
   private Waypoint handlePoint(final WayPoint wpt) {
-    final Set<Link> links =
-        wpt.getLinks().stream()
-            .map(this::handleLink)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toSet());
     final Instant time = wpt.getTime().isPresent() ? wpt.getTime().get().toInstant() : null;
     final Double ele =
         wpt.getElevation().isPresent() ? wpt.getElevation().get().doubleValue() : null;
-    return buildPoint(
-        time,
-        wpt.getLongitude().doubleValue(),
-        wpt.getLatitude().doubleValue(),
-        ele,
-        wpt.getName().orElse(null),
-        wpt.getDescription().orElse(null),
-        links);
-  }
-
-  private Link handleLink(final io.jenetics.jpx.Link link) {
-    try {
-      return new LinkBuilder(link.getText().orElse(null), new URI(link.getHref().toString())).build();
-    } catch (final URISyntaxException e) {
-      final String logMsg =
-          logMessages.getString("Error.LinkURI")
-              + "("
-              + link.getHref()
-              + "). Error was: "
-              + e.getMessage();
-      LOGGER.warn(
-          Markers.IO.getMarker(),
-          "{} | {} | {}.",
-          Actions.PARSE,
-          StatusCodes.SYNTAX_ERROR.getCode(),
-          logMsg);
-      return null;
-    }
+    return buildPoint(time, wpt.getLongitude().doubleValue(), wpt.getLatitude().doubleValue(), ele);
   }
 }
