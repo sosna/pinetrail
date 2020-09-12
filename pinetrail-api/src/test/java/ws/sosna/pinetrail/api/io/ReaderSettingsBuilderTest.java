@@ -18,34 +18,30 @@ package ws.sosna.pinetrail.api.io;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-/**
- * @author Xavier Sosnovsky
- */
+/** @author Xavier Sosnovsky */
 public class ReaderSettingsBuilderTest {
 
-    @Test
-    public void getGroupSubTrails() {
-        final ReaderSettings task
-            = new ReaderSettingsBuilder().groupSubTrails(true).build();
-        assertTrue(task.groupSubTrails());
-    }
+  @Test
+  public void getGroupSubTrails() {
+    final ReaderSettings task = new ReaderSettingsBuilder().groupSubTrails(true).build();
+    assertTrue(task.groupSubTrails());
+  }
 
-    @Test
-    public void groupSubTrailsDefaultToFalse() {
-        final ReaderSettings task = new ReaderSettingsBuilder().build();
-        assertFalse(task.groupSubTrails());
-    }
+  @Test
+  public void groupSubTrailsDefaultToFalse() {
+    final ReaderSettings task = new ReaderSettingsBuilder().build();
+    assertFalse(task.groupSubTrails());
+  }
 
-    @Test
-    public void getCrossBorder() {
-        final ReaderSettings task
-            = new ReaderSettingsBuilder().crossBorder(true).build();
-        assertTrue(task.crossBorder());
-    }
+  @Test
+  public void getCrossBorder() {
+    final ReaderSettings task = new ReaderSettingsBuilder().crossBorder(true).build();
+    assertTrue(task.crossBorder());
+  }
 
-    @Test
-    public void crossBorderDefaultToFalse() {
-        final ReaderSettings task = new ReaderSettingsBuilder().build();
-        assertFalse(task.crossBorder());
-    }
+  @Test
+  public void crossBorderDefaultToFalse() {
+    final ReaderSettings task = new ReaderSettingsBuilder().build();
+    assertFalse(task.crossBorder());
+  }
 }

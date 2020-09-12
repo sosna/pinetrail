@@ -22,45 +22,42 @@ package ws.sosna.pinetrail.api.io;
  */
 public interface WriterSettings {
 
-    /**
-     * Whether to allow overwriting existing files. Defaults to true.
-     *
-     * @return whether to allow overwriting existing files
-     */
-    boolean overwriteIfExists();
+  /**
+   * Whether to allow overwriting existing files. Defaults to true.
+   *
+   * @return whether to allow overwriting existing files
+   */
+  boolean overwriteIfExists();
 
-    /**
-     * Whether the output should be nicely formatted. Defaults to false.
-     *
-     * @return whether the output should be nicely formatted
-     */
-    boolean prettyPrinting();
+  /**
+   * Whether the output should be nicely formatted. Defaults to false.
+   *
+   * @return whether the output should be nicely formatted
+   */
+  boolean prettyPrinting();
 
-    /**
-     * Whether abnormal values (aka outliers) should be written to the output
-     * file. Defaults to false.
-     *
-     * @return whether outliers will be written to the output file
-     */
-    boolean writeOutliers();
+  /**
+   * Whether abnormal values (aka outliers) should be written to the output file. Defaults to false.
+   *
+   * @return whether outliers will be written to the output file
+   */
+  boolean writeOutliers();
 
-    /**
-     * Whether points labelled as inactive should be written to the output file.
-     * Defaults to false.
-     *
-     * Inactive points are points where the subject was most likely not moving,
-     * for example when interrupting the hike for a lunch break.
-     *
-     * @return whether inactive points will be written to the output file
-     */
-    boolean writeIdlePoints();
+  /**
+   * Whether points labelled as inactive should be written to the output file. Defaults to false.
+   *
+   * <p>Inactive points are points where the subject was most likely not moving, for example when
+   * interrupting the hike for a lunch break.
+   *
+   * @return whether inactive points will be written to the output file
+   */
+  boolean writeIdlePoints();
 
-    /**
-     * Whether the trail should contain time information. Removing time
-     * information can be useful, for example, when sharing an itinerary.
-     * Defaults to false.
-     *
-     * @return whether the trail should contain time information
-     */
-    boolean writeRoute();
+  /**
+   * Whether the trail should contain time information. Removing time information can be useful, for
+   * example, when sharing an itinerary. Defaults to false.
+   *
+   * @return whether the trail should contain time information
+   */
+  boolean writeRoute();
 }
