@@ -4,13 +4,8 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.1.11'
         classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
     }
-}
-
-plugins {
-  id "org.sonarqube" version "2.7"
 }
 
 ext.projectIds = ['group': 'ws.sosna.pinetrail', 'version': '1.0.0-SNAPSHOT']
@@ -33,14 +28,14 @@ subprojects {
     //apply from: "$rootDir/gradle/pmd.gradle"
     //apply from: "$rootDir/gradle/findbugs.gradle"
     //apply from: "$rootDir/gradle/jdepend.gradle"
-    apply plugin: 'info.solidsoft.pitest'
+    //apply plugin: 'info.solidsoft.pitest'
     
     sourceCompatibility = '11'
     targetCompatibility = '11'
     
     dependencies {
-        compile 'org.slf4j:slf4j-api:1.7.25'
-        testCompile 'junit:junit:4.12'
+        compile 'org.slf4j:slf4j-api:1.7.30'
+        testCompile 'junit:junit:4.13'
         runtime 'ch.qos.logback:logback-classic:1.2.3'
     }
     
@@ -58,14 +53,8 @@ subprojects {
         archives sourcesJar
         archives javadocJar
     }
-    
-    pitest {
-        targetClasses = ['ws.sosna.pinetrail.*']
-        threads = 4
-        outputFormats = ['XML', 'HTML']
-    }
 }
 
 wrapper {
-    gradleVersion = '4.9'
+    gradleVersion = '6.6.1'
 }

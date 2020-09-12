@@ -1,7 +1,6 @@
-apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'application'
-
 mainClassName = "ws.sosna.pinetrail.cli.Pinalyzr"
+apply plugin: 'com.github.johnrengelman.shadow'
 
 dependencies {
     compile project(':pinetrail-utils')
