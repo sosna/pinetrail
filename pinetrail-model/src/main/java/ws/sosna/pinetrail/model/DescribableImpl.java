@@ -28,52 +28,53 @@ import java.util.Set;
  */
 class DescribableImpl implements Describable {
 
-    private final String name;
-    private final String description;
-    private final Set<Link> links;
-    private final int hashCode;
+  private final String name;
+  private final String description;
+  private final Set<Link> links;
+  private final int hashCode;
 
-    DescribableImpl(final String name, final String description,
-        final Set<Link> links) {
-        this.name = name;
-        this.description = description;
-        this.links = null == links ? Collections.emptySet() : Collections.
-            unmodifiableSet(new LinkedHashSet<>(links));
-        hashCode = Objects.hash(name, description, links);
-    }
+  DescribableImpl(final String name, final String description, final Set<Link> links) {
+    this.name = name;
+    this.description = description;
+    this.links =
+        null == links
+            ? Collections.emptySet()
+            : Collections.unmodifiableSet(new LinkedHashSet<>(links));
+    hashCode = Objects.hash(name, description, links);
+  }
 
-    @Override
-    public String getName() {
-        return name;
-    }
+  @Override
+  public String getName() {
+    return name;
+  }
 
-    @Override
-    public String getDescription() {
-        return description;
-    }
+  @Override
+  public String getDescription() {
+    return description;
+  }
 
-    @Override
-    public Set<Link> getLinks() {
-        return links;
-    }
+  @Override
+  public Set<Link> getLinks() {
+    return links;
+  }
 
-    @SuppressWarnings("PMD.LawOfDemeter")
-    @Override
-    public boolean equals(final Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Describable other = (Describable) obj;
-        return Objects.equals(getName(), other.getName())
-            && Objects.equals(getDescription(), other.getDescription())
-            && Objects.equals(getLinks(), other.getLinks());
+  @SuppressWarnings("PMD.LawOfDemeter")
+  @Override
+  public boolean equals(final Object obj) {
+    if (obj == null) {
+      return false;
     }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final Describable other = (Describable) obj;
+    return Objects.equals(getName(), other.getName())
+        && Objects.equals(getDescription(), other.getDescription())
+        && Objects.equals(getLinks(), other.getLinks());
+  }
 
-    @Override
-    public int hashCode() {
-        return hashCode;
-    }
+  @Override
+  public int hashCode() {
+    return hashCode;
+  }
 }

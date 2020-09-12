@@ -27,34 +27,30 @@ import javax.validation.Valid;
  */
 interface Describable extends Serializable {
 
-    /**
-     * A short title describing the object.
-     *
-     * @return a short title for the object
-     */
-    String getName();
+  /**
+   * A short title describing the object.
+   *
+   * @return a short title for the object
+   */
+  String getName();
 
-    /**
-     * A detailed description about the object.
-     *
-     * @return a detailed description about the object
-     */
-    String getDescription();
+  /**
+   * A detailed description about the object.
+   *
+   * @return a detailed description about the object
+   */
+  String getDescription();
 
-    /**
-     * An immutable collection of links to resources with additional
-     * information.
-     *
-     * <p>
-     * Links can be used to point to additional information (for example a
-     * Wikipedia entry) about the object.
-     *
-     * <p>
-     * If no link has been attached to the object, an empty collection will be
-     * returned.
-     *
-     * @return a collection of online resources about the object
-     */
-    @Valid
-    Set<Link> getLinks();
+  /**
+   * An immutable collection of links to resources with additional information.
+   *
+   * <p>Links can be used to point to additional information (for example a Wikipedia entry) about
+   * the object.
+   *
+   * <p>If no link has been attached to the object, an empty collection will be returned.
+   *
+   * @return a collection of online resources about the object
+   */
+  @Valid
+  Set<Link> getLinks();
 }

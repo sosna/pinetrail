@@ -15,50 +15,48 @@
  */
 package ws.sosna.pinetrail.model;
 
+import static org.junit.Assert.assertTrue;
+
 import java.time.Instant;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
-/**
- * @author Xavier Sosnovsky
- */
+/** @author Xavier Sosnovsky */
 public class ElevationFixerTest {
 
-    @Test
-    public void testApply() {
-        final SortedSet<Waypoint> points = getWaypoints();
-        final ElevationFixer instance = ElevationFixer.INSTANCE;
-        final SortedSet<Waypoint> augmentedPoints = instance.apply(points);
-        for (final Waypoint point : augmentedPoints) {
-            if (null != point.getCoordinates().getElevation()) {
-                assertTrue(110.61 <= point.getCoordinates().getElevation() &&
-                    114.16 >= point.getCoordinates().getElevation());
-            }
-        }
+  @Test
+  public void testApply() {
+    final SortedSet<Waypoint> points = getWaypoints();
+    final ElevationFixer instance = ElevationFixer.INSTANCE;
+    final SortedSet<Waypoint> augmentedPoints = instance.apply(points);
+    for (final Waypoint point : augmentedPoints) {
+      if (null != point.getCoordinates().getElevation()) {
+        assertTrue(
+            110.61 <= point.getCoordinates().getElevation()
+                && 114.16 >= point.getCoordinates().getElevation());
+      }
     }
+  }
 
-    private Waypoint createWaypoint(final double latitude,
-        final double longitude) {
-        final Coordinates coordinates = new CoordinatesBuilder(longitude,
-            latitude).build();
-        return new WaypointBuilder(Instant.EPOCH, coordinates).build();
-    }
+  private Waypoint createWaypoint(final double latitude, final double longitude) {
+    final Coordinates coordinates = new CoordinatesBuilder(longitude, latitude).build();
+    return new WaypointBuilder(Instant.EPOCH, coordinates).build();
+  }
 
-    private SortedSet<Waypoint> getWaypoints() {
-        final SortedSet<Waypoint> points = new TreeSet<>();
-        points.add(createWaypoint(50.1834285166, 8.7450412475));
-        points.add(createWaypoint(50.1834630501, 8.7450394034));
-        points.add(createWaypoint(50.1833731122, 8.7450366374));
-        points.add(createWaypoint(50.1833943184, 8.7448001839));
-        points.add(createWaypoint(50.1834155247, 8.7446464598));
-        points.add(createWaypoint(50.1835140958, 8.7444315478));
-        points.add(createWaypoint(50.1835442707, 8.7443784066));
-        points.add(createWaypoint(50.1836881042, 8.7443323899));
-        points.add(createWaypoint(50.1838302612, 8.7442308012));
-        points.add(createWaypoint(50.1838716678, 8.7442001235));
-        points.add(createWaypoint(50.1839823090, 8.7444794085));
-        return points;
-    }
+  private SortedSet<Waypoint> getWaypoints() {
+    final SortedSet<Waypoint> points = new TreeSet<>();
+    points.add(createWaypoint(50.1834285166, 8.7450412475));
+    points.add(createWaypoint(50.1834630501, 8.7450394034));
+    points.add(createWaypoint(50.1833731122, 8.7450366374));
+    points.add(createWaypoint(50.1833943184, 8.7448001839));
+    points.add(createWaypoint(50.1834155247, 8.7446464598));
+    points.add(createWaypoint(50.1835140958, 8.7444315478));
+    points.add(createWaypoint(50.1835442707, 8.7443784066));
+    points.add(createWaypoint(50.1836881042, 8.7443323899));
+    points.add(createWaypoint(50.1838302612, 8.7442308012));
+    points.add(createWaypoint(50.1838716678, 8.7442001235));
+    points.add(createWaypoint(50.1839823090, 8.7444794085));
+    return points;
+  }
 }

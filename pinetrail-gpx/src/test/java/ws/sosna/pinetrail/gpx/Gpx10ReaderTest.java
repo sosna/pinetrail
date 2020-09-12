@@ -15,6 +15,7 @@
  */
 package ws.sosna.pinetrail.gpx;
 
+import io.jenetics.jpx.GPX.Version;
 import java.nio.file.FileSystems;
 import java.time.Instant;
 import java.util.Set;
@@ -60,7 +61,7 @@ public class Gpx10ReaderTest {
 
     @Test
     public void readGpx10File() throws InterruptedException {
-        final Reader reader = new Gpx10Reader();
+        final Reader reader = new GpxReader(Version.V10);
         final Set<Trail> trails = reader.apply(FileSystems.
             getDefault().getPath(".", "src/test/resources/test_bike.gpx"));
         assertEquals(1, trails.size());
@@ -90,7 +91,7 @@ public class Gpx10ReaderTest {
 
     @Test(expected = ExecutionError.class)
     public void catchException() {
-        final Reader reader = new Gpx11Reader();
+        final Reader reader = new GpxReader(Version.V10);
         reader.apply(FileSystems.
             getDefault().getPath(".",
                 "src/test/resources/2014-05-18_Wispertal_NotWellFormed.gpx"));

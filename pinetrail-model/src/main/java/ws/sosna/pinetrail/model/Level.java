@@ -23,38 +23,31 @@ package ws.sosna.pinetrail.model;
  */
 public enum Level {
 
-    /**
-     * An easy trail, suitable for beginners and families.
-     */
-    BEGINNER,
-    /**
-     * A trail suitable for people with average physical condition.
-     */
-    INTERMEDIATE,
-    /**
-     * A physically demanding trail.
-     */
-    ADVANCED;
+  /** An easy trail, suitable for beginners and families. */
+  BEGINNER,
+  /** A trail suitable for people with average physical condition. */
+  INTERMEDIATE,
+  /** A physically demanding trail. */
+  ADVANCED;
 
-    private static final int LOWER_BOUNDARY = 6;
-    private static final int UPPER_BOUNDARY = 10;
+  private static final int LOWER_BOUNDARY = 6;
+  private static final int UPPER_BOUNDARY = 10;
 
-    /**
-     * Get the level from the trail difficulty rating.
-     *
-     * @param rating the trail difficulty rating
-     *
-     * @return the trail level
-     */
-    public static Level getLevelFromRating(final Integer rating) {
-        final Level level;
-        if (rating < LOWER_BOUNDARY) {
-            level = Level.BEGINNER;
-        } else if (rating >= UPPER_BOUNDARY) {
-            level = Level.ADVANCED;
-        } else {
-            level = Level.INTERMEDIATE;
-        }
-        return level;
+  /**
+   * Get the level from the trail difficulty rating.
+   *
+   * @param rating the trail difficulty rating
+   * @return the trail level
+   */
+  public static Level getLevelFromRating(final Integer rating) {
+    final Level level;
+    if (rating < LOWER_BOUNDARY) {
+      level = Level.BEGINNER;
+    } else if (rating >= UPPER_BOUNDARY) {
+      level = Level.ADVANCED;
+    } else {
+      level = Level.INTERMEDIATE;
     }
+    return level;
+  }
 }

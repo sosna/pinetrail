@@ -22,64 +22,62 @@ import java.util.Set;
  * A helper class for all builders of {@code Describable} artefacts.
  *
  * @author Xavier Sosnovsky
- *
  * @param <T> the type of describable builder
  */
 class DescribableBuilder<T extends Builder<?>> {
 
-    private String name;
-    private String description;
-    private Set<Link> links;
+  private String name;
+  private String description;
+  private Set<Link> links;
 
-    DescribableBuilder(final String name, final String description,
-            final Set<Link> links) {
-        this.name = name;
-        this.description = description;
-        this.links = links;
-    }
+  DescribableBuilder(final String name, final String description, final Set<Link> links) {
+    this.name = name;
+    this.description = description;
+    this.links = links;
+  }
 
-    String getName() {
-        return name;
-    }
+  String getName() {
+    return name;
+  }
 
-    /**
-     * Sets a short title for the object.
-     *
-     * @param name a short title for the object.
-     * @return the builder, with an updated name
-     */
-    public T name(final String name) {
-        this.name = name;
-        return (T) this;
-    }
+  /**
+   * Sets a short title for the object.
+   *
+   * @param name a short title for the object.
+   * @return the builder, with an updated name
+   */
+  public T name(final String name) {
+    this.name = name;
+    return (T) this;
+  }
 
-    String getDescription() {
-        return description;
-    }
+  String getDescription() {
+    return description;
+  }
 
-    /**
-     * Sets the detailed description about the object.
-     *
-     * @param description a detailed description about the object
-     * @return the builder, with an updated description
-     */
-    public T description(final String description) {
-        this.description = description;
-        return (T) this;
-    }
+  /**
+   * Sets the detailed description about the object.
+   *
+   * @param description a detailed description about the object
+   * @return the builder, with an updated description
+   */
+  public T description(final String description) {
+    this.description = description;
+    return (T) this;
+  }
 
-    Set<Link> getLinks() {
-        return links;
-    }
+  Set<Link> getLinks() {
+    return links;
+  }
 
-    /**
-     * Sets a collection of online resources about the object.
-     *
-     * @param links a collection of online resources about the object
-     * @return the builder, with an updated collection of links
-     */
-    public T links(final Set<Link> links) {
-        this.links = links;
-        return (T) this;
-    }
+  /**
+   * Sets a collection of online resources about the object.
+   *
+   * @param links a collection of online resources about the object
+   * @return the builder, with an updated collection of links
+   */
+  public T links(final Set<Link> links) {
+    this.links = links;
+    return (T) this;
+  }
 }

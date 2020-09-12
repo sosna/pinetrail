@@ -15,6 +15,7 @@
  */
 package ws.sosna.pinetrail.gpx;
 
+import io.jenetics.jpx.GPX.Version;
 import ws.sosna.pinetrail.api.io.Formats;
 import ws.sosna.pinetrail.api.io.Reader;
 import ws.sosna.pinetrail.api.io.ReaderProvider;
@@ -22,26 +23,20 @@ import ws.sosna.pinetrail.api.io.ReaderProvider;
 /**
  * Provider of services reading/writing from/to GPX 1.0 files.
  *
- * <p>
- * This implementation is immutable, and so are the readers returned by this
- * provider.
+ * <p>This implementation is immutable, and so are the readers returned by this provider.
  *
  * @author Xavier Sosnovsky
  */
 public final class Gpx10Provider implements ReaderProvider {
 
-    /**
-     * Creates a new provider of GPX 1.0 readers.
-     */
-    public Gpx10Provider() {
-        super();
-    }
+  /** Creates a new provider of GPX 1.0 readers. */
+  public Gpx10Provider() {
+    super();
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Reader newReader(final Formats format) {
-        return Formats.GPX_1_0 == format ? new Gpx10Reader() : null;
-    }
+  /** {@inheritDoc} */
+  @Override
+  public Reader newReader(final Formats format) {
+    return Formats.GPX_1_0 == format ? new GpxReader(Version.V10) : null;
+  }
 }

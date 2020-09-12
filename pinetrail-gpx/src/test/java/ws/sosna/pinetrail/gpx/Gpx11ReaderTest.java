@@ -15,6 +15,8 @@
  */
 package ws.sosna.pinetrail.gpx;
 
+import io.jenetics.jpx.GPX;
+import io.jenetics.jpx.GPX.Version;
 import java.nio.file.FileSystems;
 import java.time.Instant;
 import java.util.Set;
@@ -61,7 +63,7 @@ public class Gpx11ReaderTest {
 
     @Test
     public void noPoints() throws InterruptedException {
-        final Reader reader = new Gpx11Reader();
+        final Reader reader = new GpxReader(Version.V11);
         final Set<Trail> trails = reader.apply(FileSystems.
             getDefault().getPath(".",
                 "src/test/resources/2014-05-18_Wispertal_NoPoint.gpx"));
@@ -70,7 +72,7 @@ public class Gpx11ReaderTest {
 
     @Test
     public void noSegment() throws InterruptedException {
-        final Reader reader = new Gpx11Reader();
+        final Reader reader = new GpxReader(Version.V11);
         final Set<Trail> trails = reader.apply(FileSystems.
             getDefault().getPath(".",
                 "src/test/resources/2014-05-18_Wispertal_NoSegment.gpx"));
@@ -79,7 +81,7 @@ public class Gpx11ReaderTest {
 
     @Test
     public void noTrack() throws InterruptedException {
-        final Reader reader = new Gpx11Reader();
+        final Reader reader = new GpxReader(Version.V11);
         final Set<Trail> trails = reader.apply(FileSystems.
             getDefault().getPath(".",
                 "src/test/resources/2014-05-18_Wispertal_NoTrack.gpx"));
@@ -88,7 +90,7 @@ public class Gpx11ReaderTest {
 
     @Test
     public void twoSegments() throws InterruptedException {
-        final Reader reader = new Gpx11Reader();
+        final Reader reader = new GpxReader(Version.V11);
         final Set<Trail> trails = reader.apply(FileSystems.
             getDefault().getPath(".",
                 "src/test/resources/2014-05-18_Wispertal_TwoSegments.gpx"));
@@ -145,7 +147,7 @@ public class Gpx11ReaderTest {
 
     @Test
     public void twoSegmentsMerged() throws InterruptedException {
-        final Reader reader = new Gpx11Reader().configure(
+        final Reader reader = new GpxReader(Version.V11).configure(
             new ReaderSettingsBuilder().groupSubTrails(true).build());
         final Set<Trail> trails = reader.apply(FileSystems.
             getDefault().getPath(".",
@@ -184,7 +186,7 @@ public class Gpx11ReaderTest {
 
     @Test
     public void twoTracks() throws InterruptedException {
-        final Reader reader = new Gpx11Reader().configure(
+        final Reader reader = new GpxReader(Version.V11).configure(
             new ReaderSettingsBuilder().groupSubTrails(true).build());
         final Set<Trail> trails = reader.apply(FileSystems.
             getDefault().getPath(".",
@@ -244,7 +246,7 @@ public class Gpx11ReaderTest {
 
     @Test
     public void withRoute() throws InterruptedException {
-        final Reader reader = new Gpx11Reader();
+        final Reader reader = new GpxReader(Version.V11);
         final Set<Trail> trails = reader.apply(FileSystems.
             getDefault().getPath(".",
                 "src/test/resources/2014-05-18_Wispertal_WithRoute.gpx"));
@@ -253,7 +255,7 @@ public class Gpx11ReaderTest {
 
     @Test
     public void mergeWaypoints() throws InterruptedException {
-        final Reader reader = new Gpx11Reader();
+        final Reader reader = new GpxReader(Version.V11);
         final Set<Trail> trails = reader.apply(FileSystems.
             getDefault().getPath(".",
                 "src/test/resources/2013-03-10_Wiesbaden.gpx"));
@@ -265,7 +267,7 @@ public class Gpx11ReaderTest {
 
     @Test(expected=ExecutionError.class)
     public void catchException() {
-        final Reader reader = new Gpx11Reader();
+        final Reader reader = new GpxReader(Version.V11);
         reader.apply(FileSystems.
             getDefault().getPath(".",
                 "src/test/resources/2014-05-18_Wispertal_NotWellFormed.gpx"));

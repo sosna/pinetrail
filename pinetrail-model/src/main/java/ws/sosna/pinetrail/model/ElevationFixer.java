@@ -48,263 +48,293 @@ import ws.sosna.pinetrail.utils.logging.StatusCodes;
 /**
  * Determines the elevation of the points in the trail.
  *
- * <p>
- * Regardless of whether the barometric pressure or the GPS signal is used to
- * measure the elevation, GPX files often contain elevation data of questionable
- * accuracy. Therefore, the elevation web service kindly offered by MapQuest is
- * used to get better elevation data.
+ * <p>Regardless of whether the barometric pressure or the GPS signal is used to measure the
+ * elevation, GPX files often contain elevation data of questionable accuracy. Therefore, the
+ * elevation web service kindly offered by MapQuest is used to get better elevation data.
  *
  * @author Xavier Sosnovsky
  */
 enum ElevationFixer implements Function<SortedSet<Waypoint>, SortedSet<Waypoint>> {
 
-    /**
-     * Singleton that returns an instance of the ElevationFixer.
-     */
-    INSTANCE;
+  /** Singleton that returns an instance of the ElevationFixer. */
+  INSTANCE;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(
-        ElevationFixer.class);
-    private static final int DEFAULT_TIME_OUT = 5000;
-    private static final int ASCII_QM = 63;
-    private static final int HEXA_32 = 0x20;
-    private static final int HEXA_31 = 0x1f;
-    private static final int BITS_CHUNK_SIZE = 5;
+  private static final Logger LOGGER = LoggerFactory.getLogger(ElevationFixer.class);
+  private static final int DEFAULT_TIME_OUT = 5000;
+  private static final int ASCII_QM = 63;
+  private static final int HEXA_32 = 0x20;
+  private static final int HEXA_31 = 0x1f;
+  private static final int BITS_CHUNK_SIZE = 5;
 
-    /**
-     * Determines the elevation of the points in the trail.
-     *
-     * @param points the points that make up the trail
-     *
-     * @return the points that make up the trail, with corrected elevation data
-     */
-    @Override
-    public SortedSet<Waypoint> apply(final SortedSet<Waypoint> points) {
-        final String key = Preferences.userRoot().node(
-            "ws.sosna.pinetrail.UserSettings").get("mapQuestKey", "");
-        final SortedSet<Waypoint> response = new TreeSet<>();
-        if (key.isEmpty()) {
-            LOGGER.warn(Markers.MODEL.getMarker(), "{} | {} | {}",
-                Actions.ANALYSE, StatusCodes.NOT_FOUND.getCode(),
-                "MapQuest key not found: Elevation data will not be"
-                + " corrected.");
-            response.addAll(points);
-        } else if (points.isEmpty()) {
-            LOGGER.info(Markers.MODEL.getMarker(), "{} | {} | {}",
-                Actions.ANALYSE, StatusCodes.NOT_FOUND.getCode(),
-                "No elevation data to be corrected.");
-        } else {
+  /**
+   * Determines the elevation of the points in the trail.
+   *
+   * @param points the points that make up the trail
+   * @return the points that make up the trail, with corrected elevation data
+   */
+  @Override
+  public SortedSet<Waypoint> apply(final SortedSet<Waypoint> points) {
+    final String key =
+        Preferences.userRoot().node("ws.sosna.pinetrail.UserSettings").get("mapQuestKey", "");
+    final SortedSet<Waypoint> response = new TreeSet<>();
+    if (key.isEmpty()) {
+      LOGGER.warn(
+          Markers.MODEL.getMarker(),
+          "{} | {} | {}",
+          Actions.ANALYSE,
+          StatusCodes.NOT_FOUND.getCode(),
+          "MapQuest key not found: Elevation data will not be" + " corrected.");
+      response.addAll(points);
+    } else if (points.isEmpty()) {
+      LOGGER.info(
+          Markers.MODEL.getMarker(),
+          "{} | {} | {}",
+          Actions.ANALYSE,
+          StatusCodes.NOT_FOUND.getCode(),
+          "No elevation data to be corrected.");
+    } else {
+      try {
+        final String input = compressPoints(points);
+        final List<Double> elevations = processResponse(parseXml(askMapQuest(input, key)));
+        response.addAll(replaceElevation(points, elevations));
+        LOGGER.info(
+            Markers.MODEL.getMarker(),
+            "{} | {} | {}",
+            Actions.ANALYSE,
+            StatusCodes.OK.getCode(),
+            "Successfully retrieved elevation data with MapQuest");
+      } catch (final ExecutionError e) {
+        if (StatusCodes.NOT_ACCEPTABLE == e.getErrorCode()) {
+          final Set<SortedSet<Waypoint>> slices = new LinkedHashSet<>();
+          final int idx = Math.round(points.size() / 3);
+          LOGGER.info(
+              Markers.MODEL.getMarker(),
+              "{} | {} | {}.",
+              Actions.ANALYSE,
+              StatusCodes.NOT_ACCEPTABLE.getCode(),
+              "Route is too long for MapQuest. It will be " + " splitted and resubmitted again.");
+          final List<Waypoint> ls = new ArrayList<>(points);
+          slices.add(new TreeSet(ls.subList(0, idx)));
+          slices.add(new TreeSet(ls.subList(idx, idx * 2)));
+          slices.add(new TreeSet(ls.subList(idx * 2, points.size())));
+          for (final SortedSet<Waypoint> slice : slices) {
             try {
-                final String input = compressPoints(points);
-                final List<Double> elevations
-                    = processResponse(parseXml(askMapQuest(input, key)));
-                response.addAll(replaceElevation(points, elevations));
-                LOGGER.info(Markers.MODEL.getMarker(), "{} | {} | {}",
-                    Actions.ANALYSE, StatusCodes.OK.getCode(),
-                    "Successfully retrieved elevation data with MapQuest");
-            } catch (final ExecutionError e) {
-                if (StatusCodes.NOT_ACCEPTABLE == e.getErrorCode()) {
-                    final Set<SortedSet<Waypoint>> slices
-                        = new LinkedHashSet<>();
-                    final int idx = Math.round(points.size() / 3);
-                    LOGGER.info(Markers.MODEL.getMarker(), "{} | {} | {}.",
-                        Actions.ANALYSE, StatusCodes.NOT_ACCEPTABLE.
-                        getCode(), "Route is too long for MapQuest. It will be "
-                            + " splitted and resubmitted again.");
-                    final List<Waypoint> ls = new ArrayList<>(points);
-                    slices.add(new TreeSet(ls.subList(0, idx)));
-                    slices.add(new TreeSet(ls.subList(idx, idx * 2)));
-                    slices.add(new TreeSet(ls.subList(idx * 2, points.size())));
-                    for (final SortedSet<Waypoint> slice : slices) {
-                        try {
-                            Thread.sleep(1500);
-                        } catch (final InterruptedException ex) {
-                            throw new ExecutionError(ex.getMessage(),
-                                ex.getCause(), Markers.NETWORK.getMarker(),
-                                Actions.GET, StatusCodes.INTERNAL_ERROR);
-                        }
-                        response.addAll(apply(slice));
-                    }
-                } else {
-                    LOGGER.warn(Markers.MODEL.getMarker(), "{} | {} | {}",
-                        Actions.ANALYSE, StatusCodes.INTERNAL_ERROR.getCode(),
-                        "There was an error getting elevation data from "
-                        + "MapQuest. Initial elevation data will be used "
-                        + "instead. The error was: " + e.getMessage());
-                    response.addAll(points);
-                }
+              Thread.sleep(1500);
+            } catch (final InterruptedException ex) {
+              throw new ExecutionError(
+                  ex.getMessage(),
+                  ex.getCause(),
+                  Markers.NETWORK.getMarker(),
+                  Actions.GET,
+                  StatusCodes.INTERNAL_ERROR);
             }
+            response.addAll(apply(slice));
+          }
+        } else {
+          LOGGER.warn(
+              Markers.MODEL.getMarker(),
+              "{} | {} | {}",
+              Actions.ANALYSE,
+              StatusCodes.INTERNAL_ERROR.getCode(),
+              "There was an error getting elevation data from "
+                  + "MapQuest. Initial elevation data will be used "
+                  + "instead. The error was: "
+                  + e.getMessage());
+          response.addAll(points);
         }
-        return response;
+      }
     }
+    return response;
+  }
 
-    /*
-     * Retrieve elevation data using the service provided by MapQuest.
-     */
-    private InputStream askMapQuest(final String compressedInput,
-        final String key) {
-        final String url
-            = "http://open.mapquestapi.com/elevation/v1/profile?key=" + key;
-        final String params
-            = "outFormat=xml"
+  /*
+   * Retrieve elevation data using the service provided by MapQuest.
+   */
+  private InputStream askMapQuest(final String compressedInput, final String key) {
+    final String url = "http://open.mapquestapi.com/elevation/v1/profile?key=" + key;
+    final String params =
+        "outFormat=xml"
             + "&shapeFormat=cmp6"
             + "&useFilter=true"
-            + "&outShapeFormat=none"
-            + "&latLngCollection=" + compressedInput;
-        final byte[] postData = params.getBytes(StandardCharsets.UTF_8);
-        final int postDataLength = postData.length;
+            + "&latLngCollection="
+            + compressedInput;
+    final byte[] postData = params.getBytes(StandardCharsets.UTF_8);
+    final int postDataLength = postData.length;
 
-        try {
-            final URL target = new URL(url);
-            LOGGER.debug(Markers.NETWORK.getMarker(), "{} | {} | Created URL "
-                + "for reverse elevation: {}", Actions.CREATE,
-                StatusCodes.OK.getCode(), url);
-            final HttpURLConnection conn
-                = (HttpURLConnection) target.openConnection();
-            //Abort after 5 seconds
-            conn.setConnectTimeout(DEFAULT_TIME_OUT);
-            conn.setRequestMethod("POST");
-            conn.setDoOutput(true);
-            conn.setInstanceFollowRedirects(false);
-            conn.setRequestProperty("Content-Type",
-                "application/x-www-form-urlencoded");
-            conn.setRequestProperty("charset", "utf-8");
-            conn.setRequestProperty("Content-Length", Integer.toString(
-                postDataLength));
-            conn.setUseCaches(false);
-            try (DataOutputStream wr = new DataOutputStream(conn.
-                getOutputStream())) {
-                wr.write(postData);
-                wr.flush();
-            }
-            //conn.connect();
-            return conn.getInputStream();
-        } catch (final SocketTimeoutException e) {
-            throw new ExecutionError("Connection to MapQuest timed out", e,
-                Markers.NETWORK.getMarker(), Actions.GET, StatusCodes.TIME_OUT);
-        } catch (final IOException e) {
-            throw new ExecutionError(e.getMessage(), e.getCause(),
-                Markers.NETWORK.getMarker(), Actions.OPEN,
-                StatusCodes.INTERNAL_ERROR);
-        }
+    try {
+      final URL target = new URL(url);
+      LOGGER.debug(
+          Markers.NETWORK.getMarker(),
+          "{} | {} | Created URL " + "for reverse elevation: {}",
+          Actions.CREATE,
+          StatusCodes.OK.getCode(),
+          url);
+      final HttpURLConnection conn = (HttpURLConnection) target.openConnection();
+      // Abort after 5 seconds
+      conn.setConnectTimeout(DEFAULT_TIME_OUT);
+      conn.setRequestMethod("POST");
+      conn.setDoOutput(true);
+      conn.setInstanceFollowRedirects(false);
+      conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+      conn.setRequestProperty("charset", "utf-8");
+      conn.setRequestProperty("Content-Length", Integer.toString(postDataLength));
+      conn.setUseCaches(false);
+      try (DataOutputStream wr = new DataOutputStream(conn.getOutputStream())) {
+        wr.write(postData);
+        wr.flush();
+      }
+      // conn.connect();
+      return conn.getInputStream();
+    } catch (final SocketTimeoutException e) {
+      throw new ExecutionError(
+          "Connection to MapQuest timed out",
+          e,
+          Markers.NETWORK.getMarker(),
+          Actions.GET,
+          StatusCodes.TIME_OUT);
+    } catch (final IOException e) {
+      throw new ExecutionError(
+          e.getMessage(),
+          e.getCause(),
+          Markers.NETWORK.getMarker(),
+          Actions.OPEN,
+          StatusCodes.INTERNAL_ERROR);
     }
+  }
 
-    private Document parseXml(final InputStream xmlInput) {
-        final DocumentBuilderFactory dbFactory
-            = DocumentBuilderFactory.newInstance();
-        try {
-            final DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            final Document doc = dBuilder.parse(xmlInput);
-            LOGGER.debug(Markers.MODEL.getMarker(), "{} | {} | MapQuest "
-                + "response successfully read as DOM object.",
-                Actions.PARSE, StatusCodes.OK.getCode());
-            return doc;
-        } catch (final ParserConfigurationException e) {
-            throw new ExecutionError("Error creating DOM builder", e,
-                Markers.MODEL.getMarker(), Actions.CREATE,
-                StatusCodes.INTERNAL_ERROR);
-        } catch (final SAXException e) {
-            throw new ExecutionError("Error parsing XML from MapQuest (SAX)", e,
-                Markers.MODEL.getMarker(), Actions.PARSE,
-                StatusCodes.SYNTAX_ERROR);
-        } catch (final IOException e) {
-            throw new ExecutionError("Error parsing XML from MapQuest (IO)", e,
-                Markers.MODEL.getMarker(), Actions.PARSE,
-                StatusCodes.INTERNAL_ERROR);
-        }
+  private Document parseXml(final InputStream xmlInput) {
+    final DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+    try {
+      final DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+      final Document doc = dBuilder.parse(xmlInput);
+      LOGGER.debug(
+          Markers.MODEL.getMarker(),
+          "{} | {} | MapQuest " + "response successfully read as DOM object.",
+          Actions.PARSE,
+          StatusCodes.OK.getCode());
+      return doc;
+    } catch (final ParserConfigurationException e) {
+      throw new ExecutionError(
+          "Error creating DOM builder",
+          e,
+          Markers.MODEL.getMarker(),
+          Actions.CREATE,
+          StatusCodes.INTERNAL_ERROR);
+    } catch (final SAXException e) {
+      throw new ExecutionError(
+          "Error parsing XML from MapQuest (SAX)",
+          e,
+          Markers.MODEL.getMarker(),
+          Actions.PARSE,
+          StatusCodes.SYNTAX_ERROR);
+    } catch (final IOException e) {
+      throw new ExecutionError(
+          "Error parsing XML from MapQuest (IO)",
+          e,
+          Markers.MODEL.getMarker(),
+          Actions.PARSE,
+          StatusCodes.INTERNAL_ERROR);
     }
+  }
 
-    private List<Double> processResponse(final Document xmlDocument) {
-        final List<Double> elevations = new ArrayList<>();
-        final NodeList nList
-            = xmlDocument.getElementsByTagName("distanceHeight");
-        for (int temp = 0; temp < nList.getLength(); temp++) {
-            final Node nNode = nList.item(temp);
-            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-                final Element eElement = (Element) nNode;
-                final Double elevation = Double.parseDouble(eElement.
-                    getElementsByTagName("height").item(0).getTextContent());
-                LOGGER.debug(Markers.MODEL.getMarker(), "{} | {} | MapQuest"
-                    + " response contains elevation data: {}.",
-                    Actions.ANALYSE, StatusCodes.OK.getCode(), elevation);
-                elevations.add(elevation);
-            }
-        }
-        if (0 == elevations.size()) {
-            final NodeList eList
-                = xmlDocument.getElementsByTagName("message");
-            for (int temp = 0; temp < eList.getLength(); temp++) {
-                final Node nNode = eList.item(temp);
-                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-                    final Element eElement = (Element) nNode;
-                    final String msg = eElement.getTextContent();
-                    if (-1 < msg.indexOf("maximum allowed distance")) {
-                        throw new ExecutionError("Route is too long and need "
-                            + "to be splitted", null,
-                            Markers.MODEL.getMarker(), Actions.GET,
-                            StatusCodes.NOT_ACCEPTABLE);
-                    } else {
-                        throw new ExecutionError("Could not find elevation "
-                            + "data in the response from MapQuest.", null,
-                            Markers.MODEL.getMarker(), Actions.GET,
-                            StatusCodes.NOT_FOUND);
-                    }
-                }
-            }
-        }
-        return elevations;
+  private List<Double> processResponse(final Document xmlDocument) {
+    final List<Double> elevations = new ArrayList<>();
+    final NodeList nList = xmlDocument.getElementsByTagName("distanceHeight");
+    for (int temp = 0; temp < nList.getLength(); temp++) {
+      final Node nNode = nList.item(temp);
+      if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+        final Element eElement = (Element) nNode;
+        final Double elevation =
+            Double.parseDouble(eElement.getElementsByTagName("height").item(0).getTextContent());
+        LOGGER.debug(
+            Markers.MODEL.getMarker(),
+            "{} | {} | MapQuest" + " response contains elevation data: {}.",
+            Actions.ANALYSE,
+            StatusCodes.OK.getCode(),
+            elevation);
+        elevations.add(elevation);
+      }
     }
+    if (0 == elevations.size()) {
+      final NodeList eList = xmlDocument.getElementsByTagName("message");
+      for (int temp = 0; temp < eList.getLength(); temp++) {
+        final Node nNode = eList.item(temp);
+        if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+          final Element eElement = (Element) nNode;
+          final String msg = eElement.getTextContent();
+          if (-1 < msg.indexOf("maximum allowed distance")) {
+            throw new ExecutionError(
+                "Route is too long and need " + "to be splitted",
+                null,
+                Markers.MODEL.getMarker(),
+                Actions.GET,
+                StatusCodes.NOT_ACCEPTABLE);
+          } else {
+            throw new ExecutionError(
+                "Could not find elevation " + "data in the response from MapQuest.",
+                null,
+                Markers.MODEL.getMarker(),
+                Actions.GET,
+                StatusCodes.NOT_FOUND);
+          }
+        }
+      }
+    }
+    return elevations;
+  }
 
-    private String compressPoints(final Set<Waypoint> points) {
-        int oldLat = 0;
-        int oldLng = 0;
-        final StringBuilder encoded = new StringBuilder();
-        final double precision = Math.pow(10, 6);
-        for (final Waypoint point : points) {
-            final int lat = (int) Math.round(point.getCoordinates().
-                getLatitude() * precision);
-            final int lng = (int) Math.round(point.getCoordinates().
-                getLongitude() * precision);
-            encoded.append(encodeNumber(lat - oldLat));
-            encoded.append(encodeNumber(lng - oldLng));
-            oldLat = lat;
-            oldLng = lng;
-        }
-        return encoded.toString();
+  private String compressPoints(final Set<Waypoint> points) {
+    int oldLat = 0;
+    int oldLng = 0;
+    final StringBuilder encoded = new StringBuilder();
+    final double precision = Math.pow(10, 6);
+    for (final Waypoint point : points) {
+      final int lat = (int) Math.round(point.getCoordinates().getLatitude() * precision);
+      final int lng = (int) Math.round(point.getCoordinates().getLongitude() * precision);
+      encoded.append(encodeNumber(lat - oldLat));
+      encoded.append(encodeNumber(lng - oldLng));
+      oldLat = lat;
+      oldLng = lng;
     }
+    return encoded.toString();
+  }
 
-    private String encodeNumber(final int number) {
-        int num = number << 1;
-        if (num < 0) {
-            num = ~(num);
-        }
-        final StringBuilder encoded = new StringBuilder();
-        while (num >= HEXA_32) {
-            encoded.append(Character.toChars((HEXA_32 | (num & HEXA_31))
-                + ASCII_QM));
-            num >>= BITS_CHUNK_SIZE;
-        }
-        encoded.append(Character.toChars(num + ASCII_QM));
-        return encoded.toString();
+  private String encodeNumber(final int number) {
+    int num = number << 1;
+    if (num < 0) {
+      num = ~(num);
     }
+    final StringBuilder encoded = new StringBuilder();
+    while (num >= HEXA_32) {
+      encoded.append(Character.toChars((HEXA_32 | (num & HEXA_31)) + ASCII_QM));
+      num >>= BITS_CHUNK_SIZE;
+    }
+    encoded.append(Character.toChars(num + ASCII_QM));
+    return encoded.toString();
+  }
 
-    private SortedSet<Waypoint> replaceElevation(final Set<Waypoint> points,
-        final List<Double> elevations) {
-        if (points.size() != elevations.size()) {
-            throw new ExecutionError("Elevation data is incomplete. Expected "
-                + points.size() + " but found only " + elevations.size()
-                + " points in the response from MapQuest.", null, Markers.MODEL.
-                getMarker(), Actions.GET, StatusCodes.NOT_FOUND);
-        }
-        final SortedSet<Waypoint> augmentedPoints = new TreeSet<>();
-        int i = 0;
-        for (final Waypoint point : points) {
-            final Coordinates c = CoordinatesBuilder.of(point.getCoordinates())
-                .elevation(elevations.get(i)).build();
-            augmentedPoints.add(
-                WaypointBuilder.of(point).coordinates(c).build());
-            i++;
-        }
-        return augmentedPoints;
+  private SortedSet<Waypoint> replaceElevation(
+      final Set<Waypoint> points, final List<Double> elevations) {
+    if (points.size() != elevations.size()) {
+      throw new ExecutionError(
+          "Elevation data is incomplete. Expected "
+              + points.size()
+              + " but found only "
+              + elevations.size()
+              + " points in the response from MapQuest.",
+          null,
+          Markers.MODEL.getMarker(),
+          Actions.GET,
+          StatusCodes.NOT_FOUND);
     }
+    final SortedSet<Waypoint> augmentedPoints = new TreeSet<>();
+    int i = 0;
+    for (final Waypoint point : points) {
+      final Coordinates c =
+          CoordinatesBuilder.of(point.getCoordinates()).elevation(elevations.get(i)).build();
+      augmentedPoints.add(WaypointBuilder.of(point).coordinates(c).build());
+      i++;
+    }
+    return augmentedPoints;
+  }
 }

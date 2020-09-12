@@ -24,47 +24,45 @@ import java.io.Serializable;
  */
 public interface TrailStatistics extends Serializable {
 
-    /**
-     * Get the time statistics (start time, end time, etc.) for the trail.
-     *
-     * @return the time statistics for the trail
-     */
-    Statistics getTimeDifferenceSummary();
+  /**
+   * Get the time statistics (start time, end time, etc.) for the trail.
+   *
+   * @return the time statistics for the trail
+   */
+  Statistics getTimeDifferenceSummary();
 
-    /**
-     * Get the distance statistics (number of kilometers, etc.) for the trail.
-     *
-     * @return the distance statistics for the trail
-     */
-    Statistics getDistanceSummary();
+  /**
+   * Get the distance statistics (number of kilometers, etc.) for the trail.
+   *
+   * @return the distance statistics for the trail
+   */
+  Statistics getDistanceSummary();
 
-    /**
-     * Get the statistics about the differences in elevation between the points
-     * of the trail.
-     *
-     * @return the statistics about the differences in elevation
-     */
-    Statistics getElevationDifferenceSummary();
+  /**
+   * Get the statistics about the differences in elevation between the points of the trail.
+   *
+   * @return the statistics about the differences in elevation
+   */
+  Statistics getElevationDifferenceSummary();
 
-    /**
-     * Get the elevation statistics (highest and lowest points, total elevation,
-     * etc.) for the trail.
-     *
-     * @return the elevation statistics for the trail
-     */
-    Statistics getElevationSummary();
+  /**
+   * Get the elevation statistics (highest and lowest points, total elevation, etc.) for the trail.
+   *
+   * @return the elevation statistics for the trail
+   */
+  Statistics getElevationSummary();
 
-    /**
-     * Get the speed statistics (average moving speed, etc.) for the trail.
-     *
-     * @return the speed statistics for the trail
-     */
-    Statistics getSpeedSummary();
+  /**
+   * Get the speed statistics (average moving speed, etc.) for the trail.
+   *
+   * @return the speed statistics for the trail
+   */
+  Statistics getSpeedSummary();
 
-    /**
-     * Get the grade statistics (steepness) for the trail.
-     *
-     * @return the grade statistics for the trail
-     */
-    Statistics getGradeSummary();
+  /**
+   * Get the grade statistics (steepness) for the trail.
+   *
+   * @return the grade statistics for the trail
+   */
+  Statistics getGradeSummary();
 }
