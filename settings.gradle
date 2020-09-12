@@ -1,6 +1,4 @@
-include 'pinetrail-utils'
-include 'pinetrail-model'
-include 'pinetrail-api'
+include 'pinetrail-core'
 include 'pinetrail-gpx'
 include 'pinetrail-cli'
 

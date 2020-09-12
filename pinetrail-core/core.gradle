@@ -1,0 +1,6 @@
+dependencies {
+    compile 'org.hibernate:hibernate-validator:5.4.3.Final'
+    compile 'javax.el:javax.el-api:3.0.0'
+    runtime 'org.glassfish.web:javax.el:2.2.6'
+    compile 'org.apache.commons:commons-math3:3.6.1'
+}

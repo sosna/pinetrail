@@ -1,6 +1,4 @@
 dependencies {
-    compile project(':pinetrail-utils')
-    compile project(':pinetrail-model')
-    compile project(':pinetrail-api')
+    compile project(':pinetrail-core')
     compile 'io.jenetics:jpx:2.0.0'
 }
