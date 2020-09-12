@@ -326,7 +326,6 @@ public final class WaypointBuilder implements Builder<Waypoint> {
       return timeDiff;
     }
 
-    @SuppressWarnings("PMD.LawOfDemeter")
     @Override
     public boolean equals(final Object obj) {
       if (obj == null) {

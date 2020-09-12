@@ -22,8 +22,6 @@ import java.util.LinkedHashSet;
 import java.util.LongSummaryStatistics;
 import java.util.Set;
 import java.util.stream.Collectors;
-import ws.sosna.pinetrail.model.Activity;
-import ws.sosna.pinetrail.model.Level;
 import ws.sosna.pinetrail.model.Trail;
 import ws.sosna.pinetrail.model.Waypoint;
 
@@ -75,14 +73,6 @@ final class TrailInfoWriter {
         bld.append("\nNumber of outliers: ").append(outliers.size()).append(
             " (").append(DEC_FORMAT.format(outPerc)).
             append("%)");
-        bld.append("\nType of activity: ").append(trail.getActivity());
-        if (Activity.HIKING == trail.getActivity()) {
-            bld.append("\nDifficulty level: ").append(trail.
-                getDifficultyRating());
-            bld.append(" (");
-            bld.append(Level.getLevelFromRating(trail.getDifficultyRating()));
-            bld.append(")");
-        }
         bld.append("\nCountries crossed by the trail: ").
             append(trail.getCountries());
 

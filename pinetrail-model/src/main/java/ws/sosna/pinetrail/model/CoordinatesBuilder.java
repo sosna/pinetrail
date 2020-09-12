@@ -185,7 +185,6 @@ public final class CoordinatesBuilder implements Builder<Coordinates> {
       return hashcode;
     }
 
-    @SuppressWarnings("PMD.LawOfDemeter")
     @Override
     public boolean equals(final Object obj) {
       if (obj == null) {
