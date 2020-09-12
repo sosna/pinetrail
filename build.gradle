@@ -28,11 +28,11 @@ subprojects {
     ext.configDir = new File(rootDir, 'config')
     
     apply plugin: 'java'    
-    apply from: "$rootDir/gradle/jacoco.gradle"
-    apply from: "$rootDir/gradle/checkstyle.gradle"
-    apply from: "$rootDir/gradle/pmd.gradle"
-    apply from: "$rootDir/gradle/findbugs.gradle"
-    apply from: "$rootDir/gradle/jdepend.gradle"
+    //apply from: "$rootDir/gradle/jacoco.gradle"
+    //apply from: "$rootDir/gradle/checkstyle.gradle"
+    //apply from: "$rootDir/gradle/pmd.gradle"
+    //apply from: "$rootDir/gradle/findbugs.gradle"
+    //apply from: "$rootDir/gradle/jdepend.gradle"
     apply plugin: 'info.solidsoft.pitest'
     
     sourceCompatibility = '11'
