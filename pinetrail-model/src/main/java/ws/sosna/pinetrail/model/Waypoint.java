@@ -42,7 +42,7 @@ import javax.validation.constraints.Past;
  * @see WaypointBuilder
  * @author Xavier Sosnovsky
  */
-public interface Waypoint extends Describable, Comparable<Waypoint> {
+public interface Waypoint extends Comparable<Waypoint> {
 
   /**
    * The coordinates (longitude, latitude, elevation) of the waypoint.
@@ -65,17 +65,6 @@ public interface Waypoint extends Describable, Comparable<Waypoint> {
   @Past(message = "{Model.Waypoint.Time.Past}")
   @NotNull(message = "{Model.Waypoint.Time.NotNull}")
   Instant getTime();
-
-  /**
-   * The type of point of interest such as a castle, a religious building, a viewpoint, etc.
-   *
-   * <p>Many waypoints simply represent a GPS recording at a certain point in time. Others however
-   * represent a location worth documenting or visiting again, such as a museum, a castle, a point
-   * offering a nice panoramic view, etc.
-   *
-   * @return the type of point of interest
-   */
-  WaypointType getType();
 
   /**
    * The elapsed time in seconds since the previous waypoint.

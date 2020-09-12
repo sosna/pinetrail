@@ -17,8 +17,7 @@
 package ws.sosna.pinetrail.model;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -83,16 +82,7 @@ public class CoordinatesTest {
     final double longitude = 12.9946215637;
     final double elevation = 630.28;
     final Coordinates instance = newCoordinates(longitude, latitude, elevation);
-    assertFalse(instance.equals(null));
-  }
-
-  @Test
-  public void equalityType() {
-    final double latitude = 47.5913904235;
-    final double longitude = 12.9946215637;
-    final double elevation = 630.28;
-    final Coordinates instance = newCoordinates(longitude, latitude, elevation);
-    assertFalse(instance.equals("test"));
+    assertNotEquals(instance, null);
   }
 
   @Test
@@ -102,7 +92,7 @@ public class CoordinatesTest {
     final double elevation = 630.28;
     final Coordinates instance1 = newCoordinates(longitude, latitude, elevation);
     final Coordinates instance2 = newCoordinates(0.0, latitude, elevation);
-    assertFalse(instance1.equals(instance2));
+    assertNotEquals(instance1, instance2);
   }
 
   @Test
@@ -112,7 +102,7 @@ public class CoordinatesTest {
     final double elevation = 630.28;
     final Coordinates instance1 = newCoordinates(longitude, latitude, elevation);
     final Coordinates instance2 = newCoordinates(longitude, 0.0, elevation);
-    assertFalse(instance1.equals(instance2));
+    assertNotEquals(instance1, instance2);
   }
 
   @Test
@@ -122,7 +112,7 @@ public class CoordinatesTest {
     final double elevation = 630.28;
     final Coordinates instance1 = newCoordinates(longitude, latitude, elevation);
     final Coordinates instance2 = newCoordinates(longitude, latitude, 0.0);
-    assertFalse(instance1.equals(instance2));
+    assertNotEquals(instance1, instance2);
   }
 
   @Test
@@ -132,7 +122,7 @@ public class CoordinatesTest {
     final double elevation = 630.28;
     final Coordinates instance1 = newCoordinates(longitude, latitude, elevation);
     final Coordinates instance2 = newCoordinates(longitude, latitude, elevation);
-    assertTrue(instance1.equals(instance2));
+    assertEquals(instance1, instance2);
   }
 
   @Test
@@ -152,7 +142,7 @@ public class CoordinatesTest {
     final double elevation = 630.28;
     final Coordinates instance1 = newCoordinates(longitude, latitude, elevation);
     final Coordinates instance2 = newCoordinates(longitude, latitude, 0.0);
-    assertFalse(instance1.hashCode() == instance2.hashCode());
+    assertNotEquals(instance1.hashCode(), instance2.hashCode());
   }
 
   @Test
@@ -366,7 +356,7 @@ public class CoordinatesTest {
     final double elevation = 37.0;
     final Coordinates original = newCoordinates(longitude, latitude, elevation);
     final Coordinates copy = CoordinatesBuilder.of(original).latitude(newLatitude).build();
-    assertFalse(original.equals(copy));
+    assertNotEquals(original, copy);
     assertEquals(newLatitude, copy.getLatitude(), 0.0);
   }
 
@@ -378,7 +368,7 @@ public class CoordinatesTest {
     final double elevation = 37.0;
     final Coordinates original = newCoordinates(longitude, latitude, elevation);
     final Coordinates copy = CoordinatesBuilder.of(original).longitude(newLongitude).build();
-    assertFalse(original.equals(copy));
+    assertNotEquals(original, copy);
     assertEquals(newLongitude, copy.getLongitude(), 0.0);
   }
 
@@ -390,7 +380,7 @@ public class CoordinatesTest {
     final double newElevation = 47.0;
     final Coordinates original = newCoordinates(longitude, latitude, elevation);
     final Coordinates copy = CoordinatesBuilder.of(original).elevation(newElevation).build();
-    assertFalse(original.equals(copy));
+    assertNotEquals(original, copy);
     assertEquals(newElevation, copy.getElevation(), 0.0);
   }
 

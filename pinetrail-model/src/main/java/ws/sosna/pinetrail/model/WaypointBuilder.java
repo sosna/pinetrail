@@ -50,13 +50,11 @@ import ws.sosna.pinetrail.utils.logging.StatusCodes;
  * @see Waypoint
  * @author Xavier Sosnovsky
  */
-public final class WaypointBuilder extends DescribableBuilder<WaypointBuilder>
-    implements Builder<Waypoint> {
+public final class WaypointBuilder implements Builder<Waypoint> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WaypointBuilder.class);
   private Instant time;
   private Coordinates coordinates;
-  private WaypointType type;
   private Double distance;
   private Double elevationDiff;
   private Double speed;
@@ -74,7 +72,7 @@ public final class WaypointBuilder extends DescribableBuilder<WaypointBuilder>
    * @param coordinates the coordinates of the waypoint
    */
   public WaypointBuilder(final Instant time, final Coordinates coordinates) {
-    super(null, null, null);
+    super();
     this.time = time;
     this.coordinates = coordinates;
     isActive = true;
@@ -103,17 +101,6 @@ public final class WaypointBuilder extends DescribableBuilder<WaypointBuilder>
    */
   public WaypointBuilder coordinates(final Coordinates coordinates) {
     this.coordinates = coordinates;
-    return this;
-  }
-
-  /**
-   * Sets the type of point of interest such as a castle, a religious building, a viewpoint, etc.
-   *
-   * @param type the type of point of interest
-   * @return the builder, with an updated type for this waypoint
-   */
-  public WaypointBuilder type(final WaypointType type) {
-    this.type = type;
     return this;
   }
 
@@ -210,10 +197,6 @@ public final class WaypointBuilder extends DescribableBuilder<WaypointBuilder>
    */
   public static WaypointBuilder of(final Waypoint point) {
     return new WaypointBuilder(point.getTime(), point.getCoordinates())
-        .name(point.getName())
-        .description(point.getDescription())
-        .links(point.getLinks())
-        .type(point.getType())
         .distance(point.getDistance())
         .elevationDifference(point.getElevationDifference())
         .speed(point.getSpeed())
@@ -232,12 +215,8 @@ public final class WaypointBuilder extends DescribableBuilder<WaypointBuilder>
   public Waypoint build() {
     final Waypoint obj =
         new WaypointImpl(
-            getName(),
-            getDescription(),
-            getLinks(),
             time,
             coordinates,
-            type,
             distance,
             elevationDiff,
             speed,
@@ -273,12 +252,11 @@ public final class WaypointBuilder extends DescribableBuilder<WaypointBuilder>
     }
   }
 
-  private static final class WaypointImpl extends DescribableImpl implements Waypoint {
+  private static final class WaypointImpl implements Waypoint, Serializable {
 
     private static final long serialVersionUID = -6931107933134694682L;
     private final Instant time;
     private final Coordinates coordinates;
-    private final WaypointType type;
     private final transient int hashCode;
     private final Double distance;
     private final Double elevationDiff;
@@ -288,29 +266,24 @@ public final class WaypointBuilder extends DescribableBuilder<WaypointBuilder>
     private final long timeDiff;
 
     WaypointImpl(
-        final String name,
-        final String description,
-        final Set<Link> links,
         final Instant time,
         final Coordinates coordinates,
-        final WaypointType type,
         final Double distance,
         final Double elevationDiff,
         final Double speed,
         final boolean isActive,
         final Double grade,
         final long timeDiff) {
-      super(name, description, links);
+      super();
       this.time = time;
       this.coordinates = coordinates;
-      this.type = type;
       this.distance = distance;
       this.elevationDiff = elevationDiff;
       this.speed = speed;
       this.isActive = isActive;
       this.grade = grade;
       this.timeDiff = timeDiff;
-      hashCode = Objects.hash(time, coordinates, type, super.hashCode());
+      hashCode = Objects.hash(time, coordinates);
     }
 
     @Override
@@ -321,11 +294,6 @@ public final class WaypointBuilder extends DescribableBuilder<WaypointBuilder>
     @Override
     public Instant getTime() {
       return time;
-    }
-
-    @Override
-    public WaypointType getType() {
-      return type;
     }
 
     @Override
@@ -361,13 +329,15 @@ public final class WaypointBuilder extends DescribableBuilder<WaypointBuilder>
     @SuppressWarnings("PMD.LawOfDemeter")
     @Override
     public boolean equals(final Object obj) {
-      if (!super.equals(obj)) {
+      if (obj == null) {
+        return false;
+      }
+      if (!(obj instanceof Waypoint)) {
         return false;
       }
       final Waypoint other = (Waypoint) obj;
       return Objects.equals(this.time, other.getTime())
-          && Objects.equals(this.coordinates, other.getCoordinates())
-          && this.type == other.getType();
+          && Objects.equals(this.coordinates, other.getCoordinates());
     }
 
     @Override
@@ -381,14 +351,6 @@ public final class WaypointBuilder extends DescribableBuilder<WaypointBuilder>
           + time
           + ", coordinates="
           + coordinates
-          + ", name="
-          + getName()
-          + ", description="
-          + getDescription()
-          + ", links="
-          + getLinks()
-          + ", type="
-          + type
           + ", distance="
           + distance
           + ", "
@@ -420,12 +382,8 @@ public final class WaypointBuilder extends DescribableBuilder<WaypointBuilder>
 
     private static final class SerializationProxy implements Serializable {
       private static final long serialVersionUID = -6931107933134694682L;
-      private final String name;
-      private final String description;
-      private final Set<Link> links;
       private final Instant time;
       private final Coordinates coordinates;
-      private final WaypointType type;
       private final Double distance;
       private final Double elevationDiff;
       private final Double speed;
@@ -435,12 +393,8 @@ public final class WaypointBuilder extends DescribableBuilder<WaypointBuilder>
 
       SerializationProxy(final Waypoint pt) {
         super();
-        name = pt.getName();
-        description = pt.getDescription();
-        links = pt.getLinks();
         time = pt.getTime();
         coordinates = pt.getCoordinates();
-        type = pt.getType();
         distance = pt.getDistance();
         elevationDiff = pt.getElevationDifference();
         speed = pt.getSpeed();
@@ -451,12 +405,8 @@ public final class WaypointBuilder extends DescribableBuilder<WaypointBuilder>
 
       private Object readResolve() {
         return new WaypointImpl(
-            name,
-            description,
-            links,
             time,
             coordinates,
-            type,
             distance,
             elevationDiff,
             speed,

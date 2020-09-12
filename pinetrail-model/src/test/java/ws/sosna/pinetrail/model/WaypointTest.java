@@ -18,8 +18,8 @@ package ws.sosna.pinetrail.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -29,10 +29,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
-import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -43,7 +41,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /** @author Xavier Sosnovsky */
-public class WaypointTest extends DescribableTest {
+public class WaypointTest {
 
   private static Validator validator;
 
@@ -53,208 +51,119 @@ public class WaypointTest extends DescribableTest {
     validator = factory.getValidator();
   }
 
-  @Override
-  Describable createDescribable(
-      final String name, final String description, final Set<Link> links) {
-    return newWaypoint(
-        Instant.EPOCH, newCoordinates(8.789654, 40.6784356, 127.8), name, description, links);
-  }
-
   @Test
   public void createInstance() {
-    final Waypoint point =
-        newWaypoint(Instant.MIN, newCoordinates(8.789654, 40.6784356, 127.8), null, null, null);
+    final Waypoint point = newWaypoint(Instant.MIN, newCoordinates(8.789654, 40.6784356, 127.8));
     assertNotNull(point);
   }
 
   @Test
   public void equalityCoordinates() {
-    final Waypoint point1 =
-        newWaypoint(Instant.MIN, newCoordinates(8.789654, 40.6784356, 127.8), null, null, null);
-    final Waypoint point2 =
-        newWaypoint(Instant.MIN, newCoordinates(8.789654, 40.6784356, 127.18), null, null, null);
-    assertFalse(point1.equals(point2));
-    assertFalse(point1.hashCode() == point2.hashCode());
+    final Waypoint point1 = newWaypoint(Instant.MIN, newCoordinates(8.789654, 40.6784356, 127.8));
+    final Waypoint point2 = newWaypoint(Instant.MIN, newCoordinates(8.789654, 40.6784356, 127.18));
+    assertNotEquals(point1, point2);
+    assertNotEquals(point1.hashCode(), point2.hashCode());
   }
 
   @Test
   public void equalityTime() {
-    final Waypoint point1 =
-        newWaypoint(Instant.MIN, newCoordinates(8.789654, 40.6784356, 127.8), null, null, null);
-    final Waypoint point2 =
-        newWaypoint(Instant.EPOCH, newCoordinates(8.789654, 40.6784356, 127.8), null, null, null);
-    assertFalse(point1.equals(point2));
-    assertFalse(point1.hashCode() == point2.hashCode());
+    final Waypoint point1 = newWaypoint(Instant.MIN, newCoordinates(8.789654, 40.6784356, 127.8));
+    final Waypoint point2 = newWaypoint(Instant.EPOCH, newCoordinates(8.789654, 40.6784356, 127.8));
+    assertNotEquals(point1, point2);
+    assertNotEquals(point1.hashCode(), point2.hashCode());
   }
 
   @Test
-  @Override
   public void equalityOK() {
-    super.equalityOK();
-    final Waypoint point1 =
-        newWaypoint(Instant.MIN, newCoordinates(8.789654, 40.6784356, 127.8), null, null, null);
-    final Waypoint point2 =
-        newWaypoint(Instant.MIN, newCoordinates(8.789654, 40.6784356, 127.8), null, null, null);
-    assertTrue(point1.equals(point2));
+    final Waypoint point1 = newWaypoint(Instant.MIN, newCoordinates(8.789654, 40.6784356, 127.8));
+    final Waypoint point2 = newWaypoint(Instant.MIN, newCoordinates(8.789654, 40.6784356, 127.8));
+    assertEquals(point1, point2);
   }
 
   @Test
   public void getCoordinates() {
     final Coordinates coordinates = newCoordinates(8.789654, 40.6784356, 127.8);
-    final Waypoint point = newWaypoint(Instant.MIN, coordinates, null, null, null);
+    final Waypoint point = newWaypoint(Instant.MIN, coordinates);
     assertEquals(coordinates, point.getCoordinates());
   }
 
   @Test
   public void getTime() {
     final Instant time = Instant.EPOCH;
-    final Waypoint point =
-        newWaypoint(time, newCoordinates(8.789654, 40.6784356, 127.8), null, null, null);
+    final Waypoint point = newWaypoint(time, newCoordinates(8.789654, 40.6784356, 127.8));
     assertEquals(time, point.getTime());
   }
 
   @Test
-  @Override
-  public void hashCodeOK() throws URISyntaxException {
-    super.hashCodeOK();
-    final Waypoint point1 =
-        newWaypoint(Instant.MIN, newCoordinates(8.789654, 40.6784356, 127.8), null, null, null);
-    final Waypoint point2 =
-        newWaypoint(Instant.MIN, newCoordinates(8.789654, 40.6784356, 127.8), null, null, null);
+  public void hashCodeOK() {
+    final Waypoint point1 = newWaypoint(Instant.MIN, newCoordinates(8.789654, 40.6784356, 127.8));
+    final Waypoint point2 = newWaypoint(Instant.MIN, newCoordinates(8.789654, 40.6784356, 127.8));
     assertEquals(point1.hashCode(), point2.hashCode());
   }
 
   @Test
-  @Override
-  public void hashCodeNOK() throws URISyntaxException {
-    super.hashCodeNOK();
-    final Waypoint point1 =
-        newWaypoint(Instant.MIN, newCoordinates(8.789654, 40.6784356, 127.8), null, null, null);
-    final Waypoint point2 =
-        newWaypoint(Instant.EPOCH, newCoordinates(8.789654, 40.6784356, 127.8), null, null, null);
-    assertFalse(point1.hashCode() == point2.hashCode());
+  public void hashCodeNOK() {
+    final Waypoint point1 = newWaypoint(Instant.MIN, newCoordinates(8.789654, 40.6784356, 127.8));
+    final Waypoint point2 = newWaypoint(Instant.EPOCH, newCoordinates(8.789654, 40.6784356, 127.8));
+    assertNotEquals(point1.hashCode(), point2.hashCode());
   }
 
   @Test
   public void toStringOutput() {
     final Coordinates coordinates = newCoordinates(8.789654, 40.6784356, 127.8);
-    final Waypoint point = newWaypoint(Instant.EPOCH, coordinates, null, null, null);
+    final Waypoint point = newWaypoint(Instant.EPOCH, coordinates);
     assertEquals(
         "Waypoint{time="
             + Instant.EPOCH
             + ", coordinates="
             + coordinates.toString()
-            + ", name=null, description=null, links=[], "
-            + "type=null, distance=null, elevationDifference=null, "
+            + ", distance=null, elevationDifference=null, "
             + "grade=null, speed=null, isActive=true, timeDifference=0}",
         point.toString());
   }
 
   @Test(expected = ValidationException.class)
   public void valTimeNull() {
-    newWaypoint(null, newCoordinates(8.789654, 40.6784356, 127.8), null, null, null);
+    newWaypoint(null, newCoordinates(8.789654, 40.6784356, 127.8));
   }
 
   @Test(expected = ValidationException.class)
   public void valTimeFuture() {
-    newWaypoint(Instant.MAX, newCoordinates(8.789654, 40.6784356, 127.8), null, null, null);
+    newWaypoint(Instant.MAX, newCoordinates(8.789654, 40.6784356, 127.8));
   }
 
   @Test(expected = ValidationException.class)
   public void valCoordinatesNull() {
-    newWaypoint(Instant.MIN, null, null, null, null);
+    newWaypoint(Instant.MIN, null);
   }
 
   @Test(expected = ValidationException.class)
   public void valCoordinatesInvalid() {
-    newWaypoint(Instant.MIN, newCoordinates(8.789654, null, 127.8), null, null, null);
+    newWaypoint(Instant.MIN, newCoordinates(8.789654, null, 127.8));
   }
 
   @Test
-  @Override
   public void valOK() {
-    final Waypoint point =
-        newWaypoint(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8), null, null, null);
+    final Waypoint point = newWaypoint(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8));
     final Set<ConstraintViolation<Waypoint>> constraintViolations = validator.validate(point);
     assertEquals(0, constraintViolations.size());
   }
 
   @Test
-  public void of() throws URISyntaxException {
-    final String label = "Wikipedia";
-    final URI location = new URI("https://www.wikipedia.org/");
-    final Link link = new LinkBuilder(label, location).build();
-    final Set<Link> links = new LinkedHashSet<>();
-    links.add(link);
-    final Waypoint original =
-        new WaypointBuilder(Instant.EPOCH, newCoordinates(8.789654, 45.987234, 127.8))
-            .name("name")
-            .description("desc")
-            .type(WaypointType.VIEWPOINT)
-            .links(links)
-            .build();
-    final Waypoint copy = WaypointBuilder.of(original).build();
-    assertNotSame(original, copy);
-    assertEquals(original, copy);
-  }
-
-  @Test
   public void updateTime() {
-    final Waypoint original =
-        newWaypoint(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8), null, null, null);
+    final Waypoint original = newWaypoint(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8));
     final Waypoint copy = WaypointBuilder.of(original).time(Instant.EPOCH).build();
-    assertFalse(original.equals(copy));
+    assertNotEquals(original, copy);
     assertEquals(Instant.EPOCH, copy.getTime());
   }
 
   @Test
   public void updateCoordinates() {
-    final Waypoint original =
-        newWaypoint(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8), null, null, null);
+    final Waypoint original = newWaypoint(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8));
     final Coordinates newCoordinates = newCoordinates(9.876, 42.567, 163.0);
     final Waypoint copy = WaypointBuilder.of(original).coordinates(newCoordinates).build();
-    assertFalse(original.equals(copy));
+    assertNotEquals(original, copy);
     assertEquals(newCoordinates, copy.getCoordinates());
-  }
-
-  @Test
-  public void typeDefault() {
-    final Waypoint original =
-        newWaypoint(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8), null, null, null);
-    assertNull(original.getType());
-  }
-
-  @Test
-  public void getType() {
-    final Waypoint point =
-        new WaypointBuilder(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8))
-            .type(WaypointType.VIEWPOINT)
-            .build();
-    assertEquals(WaypointType.valueOf("VIEWPOINT"), point.getType());
-  }
-
-  @Test
-  public void typeAffectEquality() {
-    final Waypoint point1 =
-        new WaypointBuilder(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8))
-            .type(WaypointType.VIEWPOINT)
-            .build();
-    final Waypoint point2 = WaypointBuilder.of(point1).build();
-    final Waypoint point3 = WaypointBuilder.of(point1).type(WaypointType.FOOD_AND_DRINK).build();
-    assertEquals(point1, point2);
-    assertFalse(point1.equals(point3));
-  }
-
-  @Test
-  public void typeAffectHashCode() {
-    final Waypoint point1 =
-        new WaypointBuilder(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8))
-            .type(WaypointType.VIEWPOINT)
-            .build();
-    final Waypoint point2 = WaypointBuilder.of(point1).build();
-    final Waypoint point3 = WaypointBuilder.of(point1).type(WaypointType.FOOD_AND_DRINK).build();
-    assertTrue(point1.hashCode() == point2.hashCode());
-    assertFalse(point1.hashCode() == point3.hashCode());
   }
 
   @Test
@@ -407,9 +316,6 @@ public class WaypointTest extends DescribableTest {
 
   @Test
   public void serialize() throws IOException, ClassNotFoundException {
-    final double latitude = 90.0;
-    final double longitude = 179.9;
-    final double elevation = 37.0;
     final Waypoint point =
         new WaypointBuilder(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8))
             .timeDifference(10)
@@ -438,16 +344,7 @@ public class WaypointTest extends DescribableTest {
     return new CoordinatesBuilder(longitude, latitude).elevation(elevation).build();
   }
 
-  private Waypoint newWaypoint(
-      final Instant time,
-      final Coordinates coordinates,
-      final String name,
-      final String description,
-      final Set<Link> links) {
-    return new WaypointBuilder(time, coordinates)
-        .name(name)
-        .description(description)
-        .links(links)
-        .build();
+  private Waypoint newWaypoint(final Instant time, final Coordinates coordinates) {
+    return new WaypointBuilder(time, coordinates).build();
   }
 }

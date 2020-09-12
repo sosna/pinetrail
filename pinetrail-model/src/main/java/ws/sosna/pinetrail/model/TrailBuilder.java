@@ -26,7 +26,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.UUID;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 import javax.validation.ConstraintViolation;
@@ -58,26 +57,21 @@ import ws.sosna.pinetrail.utils.logging.StatusCodes;
  * @see Trail
  * @author Xavier Sosnovsky
  */
-public final class TrailBuilder extends DescribableBuilder<TrailBuilder> implements Builder<Trail> {
+public final class TrailBuilder implements Builder<Trail> {
 
   private Set<Waypoint> points;
   private Set<String> countries;
-  private Integer difficultyRating;
-  private Activity activity;
-  private int rating;
-  private UUID id;
   private static final Logger LOGGER = LoggerFactory.getLogger(TrailBuilder.class);
 
   /**
    * Instantiates a new TrailBuilder, with all mandatory fields.
    *
-   * <p>Neither the {@code name} nor the collection of {@code waypoints} can be null or empty.
+   * <p>The collection of {@code waypoints} cannot be null or empty.
    *
-   * @param name a short title describing the trail
    * @param points the ordered list of points describing the trail
    */
-  public TrailBuilder(final String name, final Set<Waypoint> points) {
-    super(name, null, null);
+  public TrailBuilder(final Set<Waypoint> points) {
+    super();
     this.points = points;
   }
 
@@ -96,33 +90,6 @@ public final class TrailBuilder extends DescribableBuilder<TrailBuilder> impleme
   }
 
   /**
-   * Sets the difficulty rating for the trail.
-   *
-   * @param difficultyRating the difficulty rating of the trail
-   * @return the builder, with the updated difficulty rating
-   */
-  public TrailBuilder difficultyRating(final Integer difficultyRating) {
-    this.difficultyRating = difficultyRating;
-    return this;
-  }
-
-  /**
-   * Sets the type of outdoor activity for the trail.
-   *
-   * <p>The value represents the type of activity performed when following the trail, such as
-   * hiking, jogging or biking.
-   *
-   * <p>The value can be null.
-   *
-   * @param activity the type of outdoor activity for the trail
-   * @return the builder, with an updated activity
-   */
-  public TrailBuilder activity(final Activity activity) {
-    this.activity = activity;
-    return this;
-  }
-
-  /**
    * Sets the list of countries crossed by the trail.
    *
    * <p>Each item in the set represents an ISO 3166-1 two-letter country codes. In case no country
@@ -133,32 +100,6 @@ public final class TrailBuilder extends DescribableBuilder<TrailBuilder> impleme
    */
   public TrailBuilder countries(final Set<String> countries) {
     this.countries = countries;
-    return this;
-  }
-
-  /**
-   * Sets the star rating for the trail.
-   *
-   * <p>The value is a number from 0 (the default) to 5 (the best ranking).
-   *
-   * @param rating the star rating for the trail
-   * @return the builder, with an updated star rating
-   */
-  public TrailBuilder rating(final int rating) {
-    this.rating = rating;
-    return this;
-  }
-
-  /**
-   * Sets the trail id.
-   *
-   * <p>Will be automatically generated if empty.
-   *
-   * @param id the trail id
-   * @return the builder, with an updated id
-   */
-  public TrailBuilder id(final UUID id) {
-    this.id = id;
     return this;
   }
 
@@ -174,14 +115,7 @@ public final class TrailBuilder extends DescribableBuilder<TrailBuilder> impleme
    * @return a new TrailBuilder
    */
   public static TrailBuilder of(final Trail trail) {
-    return new TrailBuilder(trail.getName(), trail.getWaypoints())
-        .description(trail.getDescription())
-        .links(trail.getLinks())
-        .activity(trail.getActivity())
-        .difficultyRating(trail.getDifficultyRating())
-        .countries(trail.getCountries())
-        .rating(trail.getRating())
-        .id(trail.getId());
+    return new TrailBuilder(trail.getWaypoints()).countries(trail.getCountries());
   }
 
   /**
@@ -261,20 +195,7 @@ public final class TrailBuilder extends DescribableBuilder<TrailBuilder> impleme
         augmentTs - eleTs,
         statsTs - augmentTs,
         guessTs - statsTs);
-    if (null == id) {
-      id = UUID.randomUUID();
-    }
-    return new TrailImpl(
-        getName(),
-        getDescription(),
-        getLinks(),
-        augmentedPoints,
-        countries,
-        rating,
-        difficultyRating,
-        activity,
-        trailStatistics,
-        id);
+    return new TrailImpl(augmentedPoints, countries, trailStatistics);
   }
 
   private void validateTrail(final Trail trail) {
@@ -305,30 +226,6 @@ public final class TrailBuilder extends DescribableBuilder<TrailBuilder> impleme
   }
 
   private void augmentTrail(final TrailStatistics stats, final SortedSet<Waypoint> points) {
-    if (null == activity && null != stats) {
-      activity =
-          ActivityGuesser.INSTANCE.apply(stats.getSpeedSummary(), stats.getDistanceSummary());
-    }
-    if (null == difficultyRating && null != stats) {
-      final Level userLevel =
-          Level.valueOf(
-              Preferences.userRoot()
-                  .node("ws.sosna.pinetrail.UserSettings")
-                  .get("level", "INTERMEDIATE"));
-      LOGGER.info(
-          Markers.MODEL.getMarker(),
-          "{} | {} | {}",
-          Actions.ANALYSE,
-          StatusCodes.OK.getCode(),
-          "User level set to " + userLevel);
-      difficultyRating =
-          activity.getDifficultyRating(
-              userLevel,
-              stats.getDistanceSummary(),
-              stats.getElevationDifferenceSummary(),
-              points.first().getTime(),
-              points.last().getTime());
-    }
     if (null == countries || countries.isEmpty()) {
       countries = CountryGuesser.INSTANCE.apply(points);
     }
@@ -368,40 +265,23 @@ public final class TrailBuilder extends DescribableBuilder<TrailBuilder> impleme
     return outliers.size() > 0;
   }
 
-  private static final class TrailImpl extends DescribableImpl implements Trail {
+  private static final class TrailImpl implements Trail, Serializable {
 
     private static final long serialVersionUID = -5323040838868491171L;
     private final SortedSet<Waypoint> points;
     private final Set<String> countries;
-    private final int rating;
     private final transient int hashCode;
-    private final Integer difficultyRating;
-    private final Activity activity;
     private final TrailStatistics stats;
-    private final UUID id;
 
     TrailImpl(
-        final String name,
-        final String description,
-        final Set<Link> links,
         final SortedSet<Waypoint> points,
         final Set<String> countries,
-        final int rating,
-        final Integer difficultyRating,
-        final Activity activity,
-        final TrailStatistics stats,
-        final UUID id) {
-      super(name, description, links);
+        final TrailStatistics stats) {
+      super();
       this.points = Collections.unmodifiableSortedSet(points);
-      this.difficultyRating = difficultyRating;
-      this.activity = activity;
       this.countries = Collections.unmodifiableSet(new LinkedHashSet<>(countries));
-      this.rating = rating;
       this.stats = stats;
-      this.id = id;
-      hashCode =
-          Objects.hash(
-              super.hashCode(), this.points, difficultyRating, activity, countries, rating, id);
+      hashCode = Objects.hash(this.points, this.countries);
     }
 
     @Override
@@ -410,23 +290,8 @@ public final class TrailBuilder extends DescribableBuilder<TrailBuilder> impleme
     }
 
     @Override
-    public Integer getDifficultyRating() {
-      return difficultyRating;
-    }
-
-    @Override
-    public Activity getActivity() {
-      return activity;
-    }
-
-    @Override
     public Set<String> getCountries() {
       return countries;
-    }
-
-    @Override
-    public int getRating() {
-      return rating;
     }
 
     @Override
@@ -435,23 +300,17 @@ public final class TrailBuilder extends DescribableBuilder<TrailBuilder> impleme
     }
 
     @Override
-    public UUID getId() {
-      return id;
-    }
-
-    @SuppressWarnings("PMD.LawOfDemeter")
-    @Override
-    public boolean equals(final Object obj) {
-      if (!super.equals(obj)) {
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
         return false;
       }
-      final Trail other = (Trail) obj;
-      return this.points.equals(other.getWaypoints())
-          && difficultyRating.equals(other.getDifficultyRating())
-          && rating == other.getRating()
-          && activity == other.getActivity()
-          && countries.equals(other.getCountries())
-          && id.equals(other.getId());
+      TrailImpl trail = (TrailImpl) o;
+      return Objects.equals(points, trail.points) &&
+          Objects.equals(countries, trail.countries) &&
+          Objects.equals(stats, trail.stats);
     }
 
     @Override
@@ -461,27 +320,7 @@ public final class TrailBuilder extends DescribableBuilder<TrailBuilder> impleme
 
     @Override
     public String toString() {
-      return "Trail{id="
-          + id.toString()
-          + ", points="
-          + points
-          + ", name="
-          + getName()
-          + ", description="
-          + getDescription()
-          + ", links="
-          + getLinks()
-          + ", difficulty rating="
-          + difficultyRating
-          + ", activity="
-          + activity
-          + ", countries="
-          + countries
-          + ", rating="
-          + rating
-          + ", statistics="
-          + stats
-          + '}';
+      return "Trail{points=" + points + ", countries=" + countries + ", statistics=" + stats + '}';
     }
 
     private Object writeReplace() {
@@ -495,43 +334,19 @@ public final class TrailBuilder extends DescribableBuilder<TrailBuilder> impleme
     private static final class SerializationProxy implements Serializable {
 
       private static final long serialVersionUID = -5323040838868491171L;
-      private final String name;
-      private final String description;
-      private final Set<Link> links;
       private final SortedSet<Waypoint> points;
       private final Set<String> countries;
-      private final int rating;
-      private final Integer difficultyRating;
-      private final Activity activity;
       private final TrailStatistics stats;
-      private final UUID id;
 
       SerializationProxy(final Trail trail) {
         super();
-        name = trail.getName();
-        description = trail.getDescription();
-        links = trail.getLinks();
         points = trail.getWaypoints();
         countries = trail.getCountries();
-        rating = trail.getRating();
-        difficultyRating = trail.getDifficultyRating();
-        activity = trail.getActivity();
         stats = trail.getStatistics();
-        id = trail.getId();
       }
 
       private Object readResolve() {
-        return new TrailImpl(
-            name,
-            description,
-            links,
-            points,
-            countries,
-            rating,
-            difficultyRating,
-            activity,
-            stats,
-            id);
+        return new TrailImpl(points, countries, stats);
       }
     }
   }

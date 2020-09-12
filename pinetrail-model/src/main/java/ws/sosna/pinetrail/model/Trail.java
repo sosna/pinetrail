@@ -17,12 +17,8 @@ package ws.sosna.pinetrail.model;
 
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.UUID;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import org.hibernate.validator.constraints.NotBlank;
 
 /**
  * A collection of {@code Waypoint}s describing the trail.
@@ -40,28 +36,7 @@ import org.hibernate.validator.constraints.NotBlank;
  * @see TrailBuilder
  * @author Xavier Sosnovsky
  */
-public interface Trail extends Describable {
-
-  /**
-   * Returns a unique identifier for the trail.
-   *
-   * <p>The value cannot be null.
-   *
-   * @return a unique identifier for the trail
-   */
-  @NotNull(message = "{Model.Trail.Id.NotNull}")
-  UUID getId();
-
-  /**
-   * Returns a short title describing the trail.
-   *
-   * <p>The value cannot be null or empty.
-   *
-   * @return a short title for the trail
-   */
-  @Override
-  @NotBlank(message = "{Model.Trail.Name.NotBlank}")
-  String getName();
+public interface Trail {
 
   /**
    * Returns the ordered list of points describing the trail.
@@ -76,27 +51,6 @@ public interface Trail extends Describable {
   SortedSet<Waypoint> getWaypoints();
 
   /**
-   * Returns the difficulty rating of the trail.
-   *
-   * <p>The rating will be guessed from the elevation gain and the distance of the trail.
-   *
-   * @return the difficulty rating of the trail
-   */
-  Integer getDifficultyRating();
-
-  /**
-   * Returns the activity performed on the trail.
-   *
-   * <p>The value represents the type of activity performed when following the trail, such as
-   * hiking, jogging or biking.
-   *
-   * <p>The value can be null and the activity will be guessed from the average speed.
-   *
-   * @return the activity performed on the trail
-   */
-  Activity getActivity();
-
-  /**
    * Returns the list of countries crossed by the trail.
    *
    * <p>Each item in the set represents an ISO 3166-1 two-letter country codes. In case no country
@@ -105,17 +59,6 @@ public interface Trail extends Describable {
    * @return the list of countries crossed by the trail
    */
   Set<String> getCountries();
-
-  /**
-   * Returns the star rating for the trail.
-   *
-   * <p>The value is a number from 0 (the default) to 5 (the best ranking).
-   *
-   * @return the star rating for the trail
-   */
-  @Min(value = 0, message = "{Model.Trail.Rating.MinValue}")
-  @Max(value = 5, message = "{Model.Trail.Rating.MaxValue}")
-  int getRating();
 
   /**
    * Returns the time, distance, elevation and speed statistics for the trail.
