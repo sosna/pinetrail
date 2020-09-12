@@ -15,84 +15,78 @@
  */
 package ws.sosna.pinetrail.gpx;
 
+import static org.junit.Assert.assertEquals;
+
+import io.jenetics.jpx.GPX.Version;
 import java.nio.file.FileSystems;
 import java.time.Instant;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import org.junit.AfterClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
 import org.junit.BeforeClass;
+import org.junit.Test;
 import ws.sosna.pinetrail.api.io.Reader;
 import ws.sosna.pinetrail.model.Trail;
 import ws.sosna.pinetrail.model.Waypoint;
 import ws.sosna.pinetrail.utils.error.ExecutionError;
 
-/**
- * @author Xavier Sosnovsky
- */
+/** @author Xavier Sosnovsky */
 public class Gpx10ReaderTest {
 
-    private static Boolean keepOutliers;
-    private static Boolean keepIdlePoints;
+  private static Boolean keepOutliers;
+  private static Boolean keepIdlePoints;
 
-    @BeforeClass
-    public static void setup() {
-        keepOutliers = Boolean.valueOf(Preferences.userRoot().node(
-            "ws.sosna.pinetrail.model.Trail").get("keepOutliers", "false"));
-        Preferences.userRoot().node(
-            "ws.sosna.pinetrail.model.Trail").put("keepOutliers", "true");
-        keepIdlePoints = Boolean.valueOf(Preferences.userRoot().node(
-            "ws.sosna.pinetrail.model.Trail").get("keepIdlePoints", "false"));
-        Preferences.userRoot().node(
-            "ws.sosna.pinetrail.model.Trail").put("keepIdlePoints", "true");
-    }
+  @BeforeClass
+  public static void setup() {
+    keepOutliers =
+        Boolean.valueOf(
+            Preferences.userRoot()
+                .node("ws.sosna.pinetrail.model.Trail")
+                .get("keepOutliers", "false"));
+    Preferences.userRoot().node("ws.sosna.pinetrail.model.Trail").put("keepOutliers", "true");
+    keepIdlePoints =
+        Boolean.valueOf(
+            Preferences.userRoot()
+                .node("ws.sosna.pinetrail.model.Trail")
+                .get("keepIdlePoints", "false"));
+    Preferences.userRoot().node("ws.sosna.pinetrail.model.Trail").put("keepIdlePoints", "true");
+  }
 
-    @AfterClass
-    public static void cleanup() {
-        Preferences.userRoot().node(
-            "ws.sosna.pinetrail.model.Trail").put("keepOutliers",
-                keepOutliers.toString());
-        Preferences.userRoot().node(
-            "ws.sosna.pinetrail.model.Trail").put("keepIdlePoints",
-                keepIdlePoints.toString());
-    }
+  @AfterClass
+  public static void cleanup() {
+    Preferences.userRoot()
+        .node("ws.sosna.pinetrail.model.Trail")
+        .put("keepOutliers", keepOutliers.toString());
+    Preferences.userRoot()
+        .node("ws.sosna.pinetrail.model.Trail")
+        .put("keepIdlePoints", keepIdlePoints.toString());
+  }
 
-    @Test
-    public void readGpx10File() throws InterruptedException {
-        final Reader reader = new Gpx10Reader();
-        final Set<Trail> trails = reader.apply(FileSystems.
-            getDefault().getPath(".", "src/test/resources/test_bike.gpx"));
-        assertEquals(1, trails.size());
-        for (final Trail trail : trails) {
-            assertNotNull(trail.getName());
-            assertEquals("Track", trail.getName());
-            assertNull(trail.getDescription());
-            assertTrue(trail.getLinks().isEmpty());
-            assertEquals(4000, trail.getWaypoints().size());
-            final Waypoint first = trail.getWaypoints().first();
-            final Waypoint last = trail.getWaypoints().last();
-            assertEquals(Instant.parse("2015-05-14T10:53:08.985Z"),
-                first.getTime());
-            assertEquals(Double.parseDouble("49.993740000"), first.
-                getCoordinates().getLatitude(), 0);
-            assertEquals(Double.parseDouble("8.277416000"), first.
-                getCoordinates().getLongitude(), 0);
-            assertEquals(Instant.parse("2015-05-14T16:42:47.692Z"),
-                last.getTime());
-            assertEquals(Double.parseDouble("50.001615000"), last.
-                getCoordinates().getLatitude(), 0);
-            assertEquals(Double.parseDouble("8.259343000"), last.
-                getCoordinates().getLongitude(), 0);
-            break;
-        }
+  @Test
+  public void readGpx10File() {
+    final Reader reader = new GpxReader(Version.V10);
+    final Set<Trail> trails =
+        reader.apply(FileSystems.getDefault().getPath(".", "src/test/resources/test_bike.gpx"));
+    assertEquals(1, trails.size());
+    for (final Trail trail : trails) {
+      assertEquals(4000, trail.getWaypoints().size());
+      final Waypoint first = trail.getWaypoints().first();
+      final Waypoint last = trail.getWaypoints().last();
+      assertEquals(Instant.parse("2015-05-14T10:53:08.985Z"), first.getTime());
+      assertEquals(Double.parseDouble("49.993740000"), first.getCoordinates().getLatitude(), 0);
+      assertEquals(Double.parseDouble("8.277416000"), first.getCoordinates().getLongitude(), 0);
+      assertEquals(Instant.parse("2015-05-14T16:42:47.692Z"), last.getTime());
+      assertEquals(Double.parseDouble("50.001615000"), last.getCoordinates().getLatitude(), 0);
+      assertEquals(Double.parseDouble("8.259343000"), last.getCoordinates().getLongitude(), 0);
+      break;
     }
+  }
 
-    @Test(expected = ExecutionError.class)
-    public void catchException() {
-        final Reader reader = new Gpx11Reader();
-        reader.apply(FileSystems.
-            getDefault().getPath(".",
-                "src/test/resources/2014-05-18_Wispertal_NotWellFormed.gpx"));
-    }
+  @Test(expected = ExecutionError.class)
+  public void catchException() {
+    final Reader reader = new GpxReader(Version.V10);
+    reader.apply(
+        FileSystems.getDefault()
+            .getPath(".", "src/test/resources/2014-05-18_Wispertal_NotWellFormed.gpx"));
+  }
 }

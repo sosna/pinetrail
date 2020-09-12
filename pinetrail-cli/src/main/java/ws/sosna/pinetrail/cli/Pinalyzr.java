@@ -25,20 +25,20 @@ import org.kohsuke.args4j.CmdLineParser;
  */
 public final class Pinalyzr {
 
-    private Pinalyzr() {
-        super();
-    }
+  private Pinalyzr() {
+    super();
+  }
 
-    public static void main(final String[] args) {
-        final Cleaner cleaner = new Cleaner();
-        final CmdLineParser parser = new CmdLineParser(cleaner);
-        try {
-            parser.parseArgument(args);
-            cleaner.run();
-        } catch (final CmdLineException e) {
-            // handling of wrong arguments
-            System.err.println(e.getMessage());
-            parser.printUsage(System.err);
-        }
+  public static void main(final String[] args) {
+    final Cleaner cleaner = new Cleaner();
+    final CmdLineParser parser = new CmdLineParser(cleaner);
+    try {
+      parser.parseArgument(args);
+      cleaner.run();
+    } catch (final CmdLineException e) {
+      // handling of wrong arguments
+      System.err.println(e.getMessage());
+      parser.printUsage(System.err);
     }
+  }
 }

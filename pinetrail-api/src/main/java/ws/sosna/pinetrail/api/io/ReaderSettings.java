@@ -22,35 +22,30 @@ package ws.sosna.pinetrail.api.io;
  */
 public interface ReaderSettings {
 
-    /**
-     * Whether subtrails should be grouped into one {@code Trail}.
-     *
-     * <p>
-     * Certain formats allow intermediary groupings between the {@code Trail}
-     * and the {@code Waypoints}. Gpx for example has an additional level,
-     * called segments between tracks and waypoints.
-     *
-     * <p>
-     * If true, these intermediary levels will be merged into one {@code Trail}.
-     * If false, each of these levels will appear as a separate {@code Trail}.
-     *
-     * <p>
-     * Defaults to false.
-     *
-     * @return whether subtrails should be grouped
-     */
-    boolean groupSubTrails();
+  /**
+   * Whether subtrails should be grouped into one {@code Trail}.
+   *
+   * <p>Certain formats allow intermediary groupings between the {@code Trail} and the {@code
+   * Waypoints}. Gpx for example has an additional level, called segments between tracks and
+   * waypoints.
+   *
+   * <p>If true, these intermediary levels will be merged into one {@code Trail}. If false, each of
+   * these levels will appear as a separate {@code Trail}.
+   *
+   * <p>Defaults to false.
+   *
+   * @return whether subtrails should be grouped
+   */
+  boolean groupSubTrails();
 
-    /**
-     * Whether the trail crosses country borders.
-     *
-     * <p>
-     * If true, multiple points will be selected for reverse geocoding.
-     *
-     * <p>
-     * Defaults to false (for performance reasons).
-     *
-     * @return whether the trail crosses country borders
-     */
-    boolean crossBorder();
+  /**
+   * Whether the trail crosses country borders.
+   *
+   * <p>If true, multiple points will be selected for reverse geocoding.
+   *
+   * <p>Defaults to false (for performance reasons).
+   *
+   * @return whether the trail crosses country borders
+   */
+  boolean crossBorder();
 }

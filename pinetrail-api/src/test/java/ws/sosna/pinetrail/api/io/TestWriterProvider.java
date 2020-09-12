@@ -1,10 +1,10 @@
 /*
  * Copyright (c) 2014, Xavier Sosnovsky <xso@sosna.ws>
- * 
+ *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
  * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
@@ -18,34 +18,32 @@ package ws.sosna.pinetrail.api.io;
 import java.nio.file.Path;
 import ws.sosna.pinetrail.model.Trail;
 
-/**
- * @author Xavier Sosnovsky
- */
+/** @author Xavier Sosnovsky */
 public class TestWriterProvider implements WriterProvider {
 
-    public TestWriterProvider() {
-        super();
+  public TestWriterProvider() {
+    super();
+  }
+
+  @Override
+  public Writer newWriter(Formats format) {
+    return Formats.GPX_1_1 == format ? new TestWriter() : null;
+  }
+
+  private static final class TestWriter implements Writer {
+
+    public TestWriter() {
+      super();
     }
 
     @Override
-    public Writer newWriter(Formats format) {
-        return Formats.GPX_1_1 == format ? new TestWriter() : null;
+    public void accept(Trail trail, Path location) {
+      // do nothing
     }
 
-    private static final class TestWriter implements Writer {
-
-        public TestWriter() {
-            super();
-        }
-
-        @Override
-        public void accept(Trail trail, Path location) {
-            // do nothing
-        }
-
-        @Override
-        public Writer configure(final WriterSettings settings) {
-            return this;
-        }
+    @Override
+    public Writer configure(final WriterSettings settings) {
+      return this;
     }
+  }
 }

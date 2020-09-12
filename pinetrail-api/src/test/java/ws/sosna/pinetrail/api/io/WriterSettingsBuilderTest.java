@@ -18,73 +18,71 @@ package ws.sosna.pinetrail.api.io;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-/**
- * @author Xavier Sosnovsky
- */
+/** @author Xavier Sosnovsky */
 public class WriterSettingsBuilderTest {
 
-    @Test
-    public void overwriteIfExistsDefault() {
-        final WriterSettingsBuilder instance = new WriterSettingsBuilder();
-        assertTrue(instance.build().overwriteIfExists());
-    }
+  @Test
+  public void overwriteIfExistsDefault() {
+    final WriterSettingsBuilder instance = new WriterSettingsBuilder();
+    assertTrue(instance.build().overwriteIfExists());
+  }
 
-    @Test
-    public void overwriteIfExists() {
-        final WriterSettingsBuilder instance = new WriterSettingsBuilder();
-        instance.overwriteIfExists(false);
-        assertFalse(instance.build().overwriteIfExists());
-    }
+  @Test
+  public void overwriteIfExists() {
+    final WriterSettingsBuilder instance = new WriterSettingsBuilder();
+    instance.overwriteIfExists(false);
+    assertFalse(instance.build().overwriteIfExists());
+  }
 
-    @Test
-    public void prettyPrintingDefault() {
-        final WriterSettingsBuilder instance = new WriterSettingsBuilder();
-        assertFalse(instance.build().prettyPrinting());
-    }
+  @Test
+  public void prettyPrintingDefault() {
+    final WriterSettingsBuilder instance = new WriterSettingsBuilder();
+    assertFalse(instance.build().prettyPrinting());
+  }
 
-    @Test
-    public void prettyPrinting() {
-        final WriterSettingsBuilder instance = new WriterSettingsBuilder();
-        instance.prettyPrinting(true);
-        assertTrue(instance.build().prettyPrinting());
-    }
+  @Test
+  public void prettyPrinting() {
+    final WriterSettingsBuilder instance = new WriterSettingsBuilder();
+    instance.prettyPrinting(true);
+    assertTrue(instance.build().prettyPrinting());
+  }
 
-    @Test
-    public void writeOutliersDefault() {
-        final WriterSettingsBuilder instance = new WriterSettingsBuilder();
-        assertFalse(instance.build().writeOutliers());
-    }
+  @Test
+  public void writeOutliersDefault() {
+    final WriterSettingsBuilder instance = new WriterSettingsBuilder();
+    assertFalse(instance.build().writeOutliers());
+  }
 
-    @Test
-    public void writeOutliers() {
-        final WriterSettingsBuilder instance = new WriterSettingsBuilder();
-        instance.writeOutliers(true);
-        assertTrue(instance.build().writeOutliers());
-    }
+  @Test
+  public void writeOutliers() {
+    final WriterSettingsBuilder instance = new WriterSettingsBuilder();
+    instance.writeOutliers(true);
+    assertTrue(instance.build().writeOutliers());
+  }
 
-    @Test
-    public void writeIdlePointsDefault() {
-        final WriterSettingsBuilder instance = new WriterSettingsBuilder();
-        assertFalse(instance.build().writeIdlePoints());
-    }
+  @Test
+  public void writeIdlePointsDefault() {
+    final WriterSettingsBuilder instance = new WriterSettingsBuilder();
+    assertFalse(instance.build().writeIdlePoints());
+  }
 
-    @Test
-    public void writeIdlePoints() {
-        final WriterSettingsBuilder instance = new WriterSettingsBuilder();
-        instance.writeIdlePoints(true);
-        assertTrue(instance.build().writeIdlePoints());
-    }
+  @Test
+  public void writeIdlePoints() {
+    final WriterSettingsBuilder instance = new WriterSettingsBuilder();
+    instance.writeIdlePoints(true);
+    assertTrue(instance.build().writeIdlePoints());
+  }
 
-    @Test
-    public void writeRouteDefault() {
-        final WriterSettingsBuilder instance = new WriterSettingsBuilder();
-        assertFalse(instance.build().writeRoute());
-    }
+  @Test
+  public void writeRouteDefault() {
+    final WriterSettingsBuilder instance = new WriterSettingsBuilder();
+    assertFalse(instance.build().writeRoute());
+  }
 
-    @Test
-    public void writeRoute() {
-        final WriterSettingsBuilder instance = new WriterSettingsBuilder();
-        instance.writeRoute(true);
-        assertTrue(instance.build().writeRoute());
-    }
+  @Test
+  public void writeRoute() {
+    final WriterSettingsBuilder instance = new WriterSettingsBuilder();
+    instance.writeRoute(true);
+    assertTrue(instance.build().writeRoute());
+  }
 }

@@ -1,6 +1,0 @@
-apply plugin: 'findbugs'
-
-findbugs {
-    ignoreFailures = true
-    effort = 'max'
-}

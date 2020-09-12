@@ -1,10 +1,10 @@
 /*
  * Copyright (c) 2014, Xavier Sosnovsky <xso@sosna.ws>
- * 
+ *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
  * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
@@ -18,19 +18,17 @@ package ws.sosna.pinetrail.api.io;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-/**
- * @author Xavier Sosnovsky
- */
+/** @author Xavier Sosnovsky */
 public class ReadersTest {
 
-    @Test
-    public void registerProviderAndGetReader() {
-        final Reader reader = Readers.INSTANCE.newReader(Formats.GPX_1_1);
-        assertNotNull(reader);
-    }
+  @Test
+  public void registerProviderAndGetReader() {
+    final Reader reader = Readers.INSTANCE.newReader(Formats.GPX_1_1);
+    assertNotNull(reader);
+  }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void unsupportedFormat() {
-        Readers.valueOf("INSTANCE").newReader(Formats.valueOf("KML_2_2_0"));
-    }
+  @Test(expected = UnsupportedOperationException.class)
+  public void unsupportedFormat() {
+    Readers.valueOf("INSTANCE").newReader(Formats.valueOf("KML_2_2_0"));
+  }
 }

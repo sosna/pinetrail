@@ -27,73 +27,75 @@ import ws.sosna.pinetrail.utils.logging.StatusCodes;
 /**
  * Utility class that instantiates writers for the supported formats.
  *
- * <p>
- * In the background, this class uses a ServiceLoader to register the
- * {@code WriterProviders} that will be used to instantiate the {@code Writers}
- * returned to the client.
+ * <p>In the background, this class uses a ServiceLoader to register the {@code WriterProviders}
+ * that will be used to instantiate the {@code Writers} returned to the client.
  *
  * @author Xavier Sosnovsky
  */
 public enum Writers {
 
-    /**
-     * Singleton instance of Pinetrail writers.
-     */
-    INSTANCE;
+  /** Singleton instance of Pinetrail writers. */
+  INSTANCE;
 
-    private final Map<Formats, WriterProvider> providers;
-    private final Logger LOGGER = LoggerFactory.getLogger(Writers.class);
-    private final ServiceLoader<WriterProvider> loader;
+  private final Map<Formats, WriterProvider> providers;
+  private final Logger LOGGER = LoggerFactory.getLogger(Writers.class);
+  private final ServiceLoader<WriterProvider> loader;
 
-    private Writers() {
-        LOGGER.info(Markers.CONFIG.getMarker(), "{} | {} | Created a registry "
-            + "for accessing writers services.",
-            Actions.CREATE, StatusCodes.OK.getCode());
-        this.providers = new EnumMap<>(Formats.class);
-        loader = ServiceLoader.load(WriterProvider.class);
-    }
+  Writers() {
+    LOGGER.info(
+        Markers.CONFIG.getMarker(),
+        "{} | {} | Created a registry " + "for accessing writers services.",
+        Actions.CREATE,
+        StatusCodes.OK.getCode());
+    this.providers = new EnumMap<>(Formats.class);
+    loader = ServiceLoader.load(WriterProvider.class);
+  }
 
-    /**
-     * Returns a writer that will process the work item.
-     *
-     * @param format the output format
-     *
-     * @return a writer that will perform the supplied work
-     * @throws UnsupportedOperationException if there is no provider of writers
-     * for the supplied format.
-     */
-    @SuppressWarnings("PMD.LawOfDemeter")
-    public Writer newWriter(final Formats format) {
-        if (!(providers.containsKey(format))) {
-            for (final WriterProvider tmpProvider : loader) {
-                if (null != tmpProvider.newWriter(format)) {
-                    registerProvider(format, tmpProvider);
-                    break;
-                }
-            }
+  /**
+   * Returns a writer that will process the work item.
+   *
+   * @param format the output format
+   * @return a writer that will perform the supplied work
+   * @throws UnsupportedOperationException if there is no provider of writers for the supplied
+   *     format.
+   */
+  public Writer newWriter(final Formats format) {
+    if (!(providers.containsKey(format))) {
+      for (final WriterProvider tmpProvider : loader) {
+        if (null != tmpProvider.newWriter(format)) {
+          registerProvider(format, tmpProvider);
+          break;
         }
-        final WriterProvider provider = providers.get(format);
-        if (null == provider) {
-            LOGGER.warn(Markers.IO.getMarker(),
-                "{} | {} | Could not find a writer for {}.", Actions.GET,
-                StatusCodes.NOT_FOUND.getCode(), format);
-            throw new UnsupportedOperationException(
-                "Could not find a writer for " + format);
-        } else {
-            LOGGER.debug(Markers.IO.getMarker(),
-                "{} | {} | Returning a writer for {}.", Actions.GET,
-                StatusCodes.OK.getCode(), format);
-            return provider.newWriter(format);
-        }
+      }
     }
+    final WriterProvider provider = providers.get(format);
+    if (null == provider) {
+      LOGGER.warn(
+          Markers.IO.getMarker(),
+          "{} | {} | Could not find a writer for {}.",
+          Actions.GET,
+          StatusCodes.NOT_FOUND.getCode(),
+          format);
+      throw new UnsupportedOperationException("Could not find a writer for " + format);
+    } else {
+      LOGGER.debug(
+          Markers.IO.getMarker(),
+          "{} | {} | Returning a writer for {}.",
+          Actions.GET,
+          StatusCodes.OK.getCode(),
+          format);
+      return provider.newWriter(format);
+    }
+  }
 
-    @SuppressWarnings("PMD.LawOfDemeter")
-    private void registerProvider(final Formats format,
-        final WriterProvider provider) {
-        providers.putIfAbsent(format, provider);
-        LOGGER.info(Markers.CONFIG.getMarker(), "{} | {} | Registered a "
-            + "provider of writers for {} ({}).", Actions.REGISTER,
-            StatusCodes.OK.getCode(), format, provider.getClass().
-            getCanonicalName());
-    }
+  private void registerProvider(final Formats format, final WriterProvider provider) {
+    providers.putIfAbsent(format, provider);
+    LOGGER.info(
+        Markers.CONFIG.getMarker(),
+        "{} | {} | Registered a " + "provider of writers for {} ({}).",
+        Actions.REGISTER,
+        StatusCodes.OK.getCode(),
+        format,
+        provider.getClass().getCanonicalName());
+  }
 }

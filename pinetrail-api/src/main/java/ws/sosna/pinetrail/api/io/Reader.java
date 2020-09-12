@@ -23,41 +23,34 @@ import ws.sosna.pinetrail.model.Trail;
 /**
  * Contract for services that extract information about trails.
  *
- * <p>
- * A reader service typically processes a file in a particular format (GPX,
- * KML, GeoJSON, etc.) and returns the extracted {@code Trails} has been found.
+ * <p>A reader service typically processes a file in a particular format (GPX, KML, GeoJSON, etc.)
+ * and returns the extracted {@code Trails} has been found.
  *
- * <p>
- * Implementers of this interface are expected to report any issue
- * preventing their process to complete successfully using an
- * {@code ExecutionError}.
+ * <p>Implementers of this interface are expected to report any issue preventing their process to
+ * complete successfully using an {@code ExecutionError}.
  *
  * @author Xavier Sosnovsky
- *
  * @see ws.sosna.pinetrail.model.Trail
  * @see ws.sosna.pinetrail.utils.error.ExecutionError
  */
 public interface Reader extends Function<Path, Set<Trail>> {
 
-    /**
-     * Configure the reader with the supplied settings.
-     *
-     * @param settings the settings used to configure the reader
-     *
-     * @return the configured reader
-     */
-    Reader configure(final ReaderSettings settings);
+  /**
+   * Configure the reader with the supplied settings.
+   *
+   * @param settings the settings used to configure the reader
+   * @return the configured reader
+   */
+  Reader configure(final ReaderSettings settings);
 
-    /**
-     * Triggers the extraction of information about trails from the supplied
-     * file.
-     *
-     * @param fileLocation the location of the file from which the trail
-     * information will be extracted.
-     *
-     * @throws ws.sosna.pinetrail.utils.error.ExecutionError issue preventing
-     * the extraction process to finish successfully.
-     */
-    @Override
-    Set<Trail> apply(final Path fileLocation);
+  /**
+   * Triggers the extraction of information about trails from the supplied file.
+   *
+   * @param fileLocation the location of the file from which the trail information will be
+   *     extracted.
+   * @throws ws.sosna.pinetrail.utils.error.ExecutionError issue preventing the extraction process
+   *     to finish successfully.
+   */
+  @Override
+  Set<Trail> apply(final Path fileLocation);
 }
