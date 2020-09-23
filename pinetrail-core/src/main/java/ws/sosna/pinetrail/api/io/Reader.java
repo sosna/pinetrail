@@ -18,30 +18,22 @@ package ws.sosna.pinetrail.api.io;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.function.Function;
-import ws.sosna.pinetrail.model.Trail;
+import ws.sosna.pinetrail.model.GpsRecord;
 
 /**
  * Contract for services that extract information about trails.
  *
  * <p>A reader service typically processes a file in a particular format (GPX, KML, GeoJSON, etc.)
- * and returns the extracted {@code Trails} has been found.
+ * and returns the extracted {@code GpsRecord}s found.
  *
  * <p>Implementers of this interface are expected to report any issue preventing their process to
  * complete successfully using an {@code ExecutionError}.
  *
  * @author Xavier Sosnovsky
- * @see Trail
+ * @see GpsRecord
  * @see ws.sosna.pinetrail.utils.error.ExecutionError
  */
-public interface Reader extends Function<Path, Set<Trail>> {
-
-  /**
-   * Configure the reader with the supplied settings.
-   *
-   * @param settings the settings used to configure the reader
-   * @return the configured reader
-   */
-  Reader configure(final ReaderSettings settings);
+public interface Reader extends Function<Path, Set<GpsRecord>> {
 
   /**
    * Triggers the extraction of information about trails from the supplied file.
@@ -52,5 +44,5 @@ public interface Reader extends Function<Path, Set<Trail>> {
    *     to finish successfully.
    */
   @Override
-  Set<Trail> apply(final Path fileLocation);
+  Set<GpsRecord> apply(final Path fileLocation);
 }

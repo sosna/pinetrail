@@ -1,4 +1,4 @@
-package ws.sosna.pinetrail.model;
+package ws.sosna.pinetrail.analysis;
 
 /*
  * Copyright (c) 2014, Xavier Sosnovsky <xso@sosna.ws>
@@ -25,6 +25,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.prefs.Preferences;
 import org.junit.Test;
+import ws.sosna.pinetrail.model.GpsRecord;
 
 /** @author Xavier Sosnovsky */
 public class CountryGuesserTest {
@@ -35,7 +36,7 @@ public class CountryGuesserTest {
     Preferences.userRoot()
         .node("ws.sosna.pinetrail.model.Trail")
         .put("crossBorder", Boolean.toString(false));
-    final SortedSet<Waypoint> points = new TreeSet<>();
+    final SortedSet<GpsRecord> points = new TreeSet<>();
     points.add(getPoint(7.9630853701, 50.1181208342, 214.03, "2014-05-18T08:25:32Z"));
     points.add(getPoint(7.9629951809, 50.1181007177, 215.47, "2014-05-18T08:26:14Z"));
     points.add(getPoint(7.9631012119, 50.1183273643, 216.43, "2014-05-18T08:27:02Z"));
@@ -52,9 +53,7 @@ public class CountryGuesserTest {
     }
   }
 
-  private Waypoint getPoint(final double x, final double y, final double z, final String time) {
-    return new WaypointBuilder(
-            Instant.parse(time), new CoordinatesBuilder(x, y).elevation(z).build())
-        .build();
+  private GpsRecord getPoint(final double x, final double y, final double z, final String time) {
+    return GpsRecord.of(Instant.parse(time), x, y, z);
   }
 }

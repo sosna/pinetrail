@@ -13,7 +13,7 @@
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-package ws.sosna.pinetrail.model;
+package ws.sosna.pinetrail.analysis;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -23,6 +23,9 @@ import java.util.TreeSet;
 import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ws.sosna.pinetrail.model.GpsRecord;
+import ws.sosna.pinetrail.model.Waypoint;
+import ws.sosna.pinetrail.model.WaypointBuilder;
 import ws.sosna.pinetrail.utils.logging.Actions;
 import ws.sosna.pinetrail.utils.logging.Markers;
 import ws.sosna.pinetrail.utils.logging.StatusCodes;
@@ -32,7 +35,7 @@ import ws.sosna.pinetrail.utils.logging.StatusCodes;
  *
  * @author Xavier Sosnovsky
  */
-enum PointsAugmenter implements Function<SortedSet<Waypoint>, SortedSet<Waypoint>> {
+public enum PointsAugmenter implements Function<SortedSet<GpsRecord>, SortedSet<Waypoint>> {
 
   /** Singleton that returns an instance of a PointsAugmenter. */
   INSTANCE;
@@ -49,14 +52,14 @@ enum PointsAugmenter implements Function<SortedSet<Waypoint>, SortedSet<Waypoint
    * Add distance, speed, grade, time difference and elevation difference to the points contained in
    * the supplied collection.
    *
-   * @param points the collection of points that will be augmented
+   * @param records the collection of gps records that will be augmented
    * @return the collection of augmented points
    */
   @Override
-  public SortedSet<Waypoint> apply(final SortedSet<Waypoint> points) {
+  public SortedSet<Waypoint> apply(final SortedSet<GpsRecord> records) {
     final SortedSet<Waypoint> output = new TreeSet<>();
-    if (!points.isEmpty()) {
-      final List<Waypoint> received = new ArrayList<>(points);
+    if (!records.isEmpty()) {
+      final List<GpsRecord> received = new ArrayList<>(records);
       output.add(handleFirstPoint(received.get(0)));
       for (int i = 1; i < received.size(); i++) {
         output.add(augmentPoint(received.get(i), received.get(i - 1)));
@@ -65,8 +68,8 @@ enum PointsAugmenter implements Function<SortedSet<Waypoint>, SortedSet<Waypoint
     return output;
   }
 
-  private Waypoint handleFirstPoint(final Waypoint current) {
-    return WaypointBuilder.of(current)
+  private Waypoint handleFirstPoint(final GpsRecord current) {
+    return new WaypointBuilder(current)
         .distance(0.0)
         .elevationDifference(0.0)
         .grade(0.0)
@@ -76,15 +79,15 @@ enum PointsAugmenter implements Function<SortedSet<Waypoint>, SortedSet<Waypoint
         .build();
   }
 
-  private Waypoint augmentPoint(final Waypoint current, final Waypoint previous) {
+  private Waypoint augmentPoint(final GpsRecord current, final GpsRecord previous) {
     final Double distance = calculateDistance(current, previous);
     final Double eleDiff = calculateEleDiff(current, previous);
     final Double grade = calculateGrade(distance, eleDiff);
     final long elapsed = Duration.between(previous.getTime(), current.getTime()).getSeconds();
     final Double speed = calculateSpeed(distance, elapsed);
     final boolean isActive = isActive(speed);
-    final WaypointBuilder bld = WaypointBuilder.of(current);
-    return bld.distance(distance)
+    return new WaypointBuilder(current)
+        .distance(distance)
         .elevationDifference(eleDiff)
         .grade(grade)
         .speed(speed)
@@ -97,13 +100,11 @@ enum PointsAugmenter implements Function<SortedSet<Waypoint>, SortedSet<Waypoint
    * Java implementation of the JavaScript formula kindly published on movable type:
    * http://www.movable-type.co.uk/scripts/latlong.html.
    */
-  private Double calculateDistance(final Waypoint p1, final Waypoint p2) {
-    final double dLat =
-        Math.toRadians(p2.getCoordinates().getLatitude() - p1.getCoordinates().getLatitude());
-    final double dLon =
-        Math.toRadians(p2.getCoordinates().getLongitude() - p1.getCoordinates().getLongitude());
-    final double lat1 = Math.toRadians(p1.getCoordinates().getLatitude());
-    final double lat2 = Math.toRadians(p2.getCoordinates().getLatitude());
+  private Double calculateDistance(final GpsRecord p1, final GpsRecord p2) {
+    final double dLat = Math.toRadians(p2.getLatitude() - p1.getLatitude());
+    final double dLon = Math.toRadians(p2.getLongitude() - p1.getLongitude());
+    final double lat1 = Math.toRadians(p1.getLatitude());
+    final double lat2 = Math.toRadians(p2.getLatitude());
 
     final double a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2)
@@ -112,9 +113,8 @@ enum PointsAugmenter implements Function<SortedSet<Waypoint>, SortedSet<Waypoint
     return EARTH_RADIUS * KM2M * c;
   }
 
-  private Double calculateEleDiff(final Waypoint current, final Waypoint previous) {
-    if (null == current.getCoordinates().getElevation()
-        || null == previous.getCoordinates().getElevation()) {
+  private Double calculateEleDiff(final GpsRecord current, final GpsRecord previous) {
+    if (null == current.getElevation() || null == previous.getElevation()) {
       LOGGER.warn(
           Markers.MODEL.getMarker(),
           "{} | {} | Missing "
@@ -125,7 +125,7 @@ enum PointsAugmenter implements Function<SortedSet<Waypoint>, SortedSet<Waypoint
           current.getTime());
       return 0.0;
     } else {
-      return current.getCoordinates().getElevation() - previous.getCoordinates().getElevation();
+      return current.getElevation() - previous.getElevation();
     }
   }
 

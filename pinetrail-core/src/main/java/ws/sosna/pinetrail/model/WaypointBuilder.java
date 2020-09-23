@@ -16,10 +16,6 @@
  */
 package ws.sosna.pinetrail.model;
 
-import java.io.InvalidObjectException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
-import java.time.Instant;
 import java.util.Objects;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
@@ -50,11 +46,10 @@ import ws.sosna.pinetrail.utils.logging.StatusCodes;
  * @see Waypoint
  * @author Xavier Sosnovsky
  */
-public final class WaypointBuilder implements Builder<Waypoint> {
+public final class WaypointBuilder {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WaypointBuilder.class);
-  private Instant time;
-  private Coordinates coordinates;
+  private final GpsRecord record;
   private Double distance;
   private Double elevationDiff;
   private Double speed;
@@ -65,43 +60,12 @@ public final class WaypointBuilder implements Builder<Waypoint> {
   /**
    * Instantiates a new WaypointBuilder, with all mandatory fields.
    *
-   * <p>Neither the {@code time} nor the {@code coordinates} can be null. Also, the {@code time}
-   * must be in the past.
-   *
-   * @param time the moment in time when the coordinates were measured
-   * @param coordinates the coordinates of the waypoint
+   * @param record the gps record
    */
-  public WaypointBuilder(final Instant time, final Coordinates coordinates) {
+  public WaypointBuilder(final GpsRecord record) {
     super();
-    this.time = time;
-    this.coordinates = coordinates;
+    this.record = record;
     isActive = true;
-  }
-
-  /**
-   * Sets the moment in time when the coordinates were measured.
-   *
-   * <p>It must be in the past (no kidding) and it cannot be null.
-   *
-   * @param time the moment in time when the coordinates were measured
-   * @return the builder, with an updated timestamp
-   */
-  public WaypointBuilder time(final Instant time) {
-    this.time = time;
-    return this;
-  }
-
-  /**
-   * Sets the coordinates (longitude, latitude, elevation) of the waypoint.
-   *
-   * <p>It cannot be null.
-   *
-   * @param coordinates the coordinates of the waypoint
-   * @return the builder, with updated coordinates
-   */
-  public WaypointBuilder coordinates(final Coordinates coordinates) {
-    this.coordinates = coordinates;
-    return this;
   }
 
   /**
@@ -196,7 +160,7 @@ public final class WaypointBuilder implements Builder<Waypoint> {
    * @return a new WaypointBuilder
    */
   public static WaypointBuilder of(final Waypoint point) {
-    return new WaypointBuilder(point.getTime(), point.getCoordinates())
+    return new WaypointBuilder(point.getRecord())
         .distance(point.getDistance())
         .elevationDifference(point.getElevationDifference())
         .speed(point.getSpeed())
@@ -211,18 +175,9 @@ public final class WaypointBuilder implements Builder<Waypoint> {
    * @return a new immutable instance of the Waypoint interface
    * @throws ValidationException if validation fails
    */
-  @Override
   public Waypoint build() {
     final Waypoint obj =
-        new WaypointImpl(
-            time,
-            coordinates,
-            distance,
-            elevationDiff,
-            speed,
-            isActive,
-            grade,
-            timeDiff);
+        new WaypointImpl(record, distance, elevationDiff, speed, isActive, grade, timeDiff);
     final Set<ConstraintViolation<Waypoint>> violations =
         ValidationService.INSTANCE.getValidator().validate(obj);
     if (violations.isEmpty()) {
@@ -246,18 +201,14 @@ public final class WaypointBuilder implements Builder<Waypoint> {
           "{} | {} | Error" + " validating waypoint {}:  {}",
           Actions.CREATE,
           StatusCodes.SYNTAX_ERROR.getCode(),
-          time,
+          record.getTime(),
           errorMsg);
       throw new ValidationException(errorMsg);
     }
   }
 
-  private static final class WaypointImpl implements Waypoint, Serializable {
-
-    private static final long serialVersionUID = -6931107933134694682L;
-    private final Instant time;
-    private final Coordinates coordinates;
-    private final transient int hashCode;
+  private static final class WaypointImpl implements Waypoint {
+    private final GpsRecord record;
     private final Double distance;
     private final Double elevationDiff;
     private final Double speed;
@@ -266,8 +217,7 @@ public final class WaypointBuilder implements Builder<Waypoint> {
     private final long timeDiff;
 
     WaypointImpl(
-        final Instant time,
-        final Coordinates coordinates,
+        final GpsRecord record,
         final Double distance,
         final Double elevationDiff,
         final Double speed,
@@ -275,25 +225,18 @@ public final class WaypointBuilder implements Builder<Waypoint> {
         final Double grade,
         final long timeDiff) {
       super();
-      this.time = time;
-      this.coordinates = coordinates;
+      this.record = record;
       this.distance = distance;
       this.elevationDiff = elevationDiff;
       this.speed = speed;
       this.isActive = isActive;
       this.grade = grade;
       this.timeDiff = timeDiff;
-      hashCode = Objects.hash(time, coordinates);
     }
 
     @Override
-    public Coordinates getCoordinates() {
-      return coordinates;
-    }
-
-    @Override
-    public Instant getTime() {
-      return time;
+    public GpsRecord getRecord() {
+      return record;
     }
 
     @Override
@@ -335,21 +278,18 @@ public final class WaypointBuilder implements Builder<Waypoint> {
         return false;
       }
       final Waypoint other = (Waypoint) obj;
-      return Objects.equals(this.time, other.getTime())
-          && Objects.equals(this.coordinates, other.getCoordinates());
+      return Objects.equals(record, other.getRecord());
     }
 
     @Override
     public int hashCode() {
-      return hashCode;
+      return record.hashCode();
     }
 
     @Override
     public String toString() {
-      return "Waypoint{time="
-          + time
-          + ", coordinates="
-          + coordinates
+      return "Waypoint{record="
+          + record
           + ", distance="
           + distance
           + ", "
@@ -368,51 +308,7 @@ public final class WaypointBuilder implements Builder<Waypoint> {
 
     @Override
     public int compareTo(final Waypoint point) {
-      return this.time.compareTo(point.getTime());
-    }
-
-    private Object writeReplace() {
-      return new SerializationProxy(this);
-    }
-
-    private void readObject(final ObjectInputStream stream) throws InvalidObjectException {
-      throw new InvalidObjectException("Proxy required");
-    }
-
-    private static final class SerializationProxy implements Serializable {
-      private static final long serialVersionUID = -6931107933134694682L;
-      private final Instant time;
-      private final Coordinates coordinates;
-      private final Double distance;
-      private final Double elevationDiff;
-      private final Double speed;
-      private final boolean isActive;
-      private final Double grade;
-      private final long timeDiff;
-
-      SerializationProxy(final Waypoint pt) {
-        super();
-        time = pt.getTime();
-        coordinates = pt.getCoordinates();
-        distance = pt.getDistance();
-        elevationDiff = pt.getElevationDifference();
-        speed = pt.getSpeed();
-        isActive = pt.isActive();
-        grade = pt.getGrade();
-        timeDiff = pt.getTimeDifference();
-      }
-
-      private Object readResolve() {
-        return new WaypointImpl(
-            time,
-            coordinates,
-            distance,
-            elevationDiff,
-            speed,
-            isActive,
-            grade,
-            timeDiff);
-      }
+      return this.record.getTime().compareTo(point.getRecord().getTime());
     }
   }
 }

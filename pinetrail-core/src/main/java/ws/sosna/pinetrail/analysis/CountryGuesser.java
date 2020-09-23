@@ -13,7 +13,7 @@
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-package ws.sosna.pinetrail.model;
+package ws.sosna.pinetrail.analysis;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,6 +40,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import ws.sosna.pinetrail.model.GpsRecord;
 import ws.sosna.pinetrail.utils.error.ExecutionError;
 import ws.sosna.pinetrail.utils.logging.Actions;
 import ws.sosna.pinetrail.utils.logging.Markers;
@@ -53,7 +54,7 @@ import ws.sosna.pinetrail.utils.logging.StatusCodes;
  *
  * @author Xavier Sosnovsky
  */
-enum CountryGuesser implements Function<SortedSet<Waypoint>, Set<String>> {
+public enum CountryGuesser implements Function<SortedSet<GpsRecord>, Set<String>> {
 
   /** Singleton that returns an instance of a CountryGuesser. */
   INSTANCE;
@@ -69,7 +70,7 @@ enum CountryGuesser implements Function<SortedSet<Waypoint>, Set<String>> {
    * @return the countries crossed by the trail
    */
   @Override
-  public Set<String> apply(final SortedSet<Waypoint> points) {
+  public Set<String> apply(final SortedSet<GpsRecord> points) {
     final Set<String> countries = new LinkedHashSet<>();
     mapQuestKey =
         Preferences.userRoot().node("ws.sosna.pinetrail.UserSettings").get("mapQuestKey", "");
@@ -106,8 +107,8 @@ enum CountryGuesser implements Function<SortedSet<Waypoint>, Set<String>> {
    * collection of waypoints. The default strategy is to randomely select one
    * in the collection of points.
    */
-  private Set<Waypoint> getSelectedPoints(final SortedSet<Waypoint> points) {
-    final Set<Waypoint> selected = new LinkedHashSet<>();
+  private Set<GpsRecord> getSelectedPoints(final SortedSet<GpsRecord> points) {
+    final Set<GpsRecord> selected = new LinkedHashSet<>();
     if (Boolean.parseBoolean(
         Preferences.userRoot()
             .node("ws.sosna.pinetrail.model.Trail")
@@ -123,8 +124,8 @@ enum CountryGuesser implements Function<SortedSet<Waypoint>, Set<String>> {
    * Returns the point selected randomely for reverse geocoding out of the
    * supplied collection of waypoints.
    */
-  private Waypoint getRandomPoint(final SortedSet<Waypoint> points) {
-    final List<Waypoint> ptsList = new ArrayList<>(points);
+  private GpsRecord getRandomPoint(final SortedSet<GpsRecord> points) {
+    final List<GpsRecord> ptsList = new ArrayList<>(points);
     return ptsList.get(new Random().nextInt(points.size()));
   }
 
@@ -132,12 +133,12 @@ enum CountryGuesser implements Function<SortedSet<Waypoint>, Set<String>> {
    * Returns the points selected randomely for reverse geocoding out of the
    * supplied collection of waypoints, taking one point per hour.
    */
-  private Set<Waypoint> getOnePointPerHour(final SortedSet<Waypoint> points) {
-    final Set<Waypoint> selected = new LinkedHashSet<>();
+  private Set<GpsRecord> getOnePointPerHour(final SortedSet<GpsRecord> points) {
+    final Set<GpsRecord> selected = new LinkedHashSet<>();
     final long hours = ChronoUnit.HOURS.between(points.first().getTime(), points.last().getTime());
     final double step = Math.floor(points.size() / hours);
     int count = 0;
-    final ArrayList<Waypoint> ptsList = new ArrayList<>(points);
+    final ArrayList<GpsRecord> ptsList = new ArrayList<>(points);
     while (count < points.size()) {
       selected.add(ptsList.get(count));
       count += step;
@@ -150,14 +151,14 @@ enum CountryGuesser implements Function<SortedSet<Waypoint>, Set<String>> {
    * Performs the reverse geocoding of the supplied point, using the service
    * provided by Mapquest.
    */
-  private InputStream askMapquest(final Waypoint point) {
+  private InputStream askMapquest(final GpsRecord point) {
     final String url =
         "http://open.mapquestapi.com/nominatim/v1/"
             + "reverse.php?format=xml"
             + "&lat="
-            + point.getCoordinates().getLatitude()
+            + point.getLatitude()
             + "&lon="
-            + point.getCoordinates().getLongitude()
+            + point.getLongitude()
             + "&key="
             + mapQuestKey;
     try {

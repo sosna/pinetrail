@@ -13,21 +13,23 @@
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-package ws.sosna.pinetrail.model;
+package ws.sosna.pinetrail.analysis;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
+import ws.sosna.pinetrail.model.Waypoint;
 
 /**
  * Compiles statistics about a trail.
  *
  * @author Xavier Sosnovsky
  */
-enum StatisticsProvider implements Function<Set<Waypoint>, TrailStatistics> {
+public enum StatisticsProvider implements Function<Set<Waypoint>, TrailStatistics> {
 
   /** Singleton that returns an instance of a StatisticsProvider. */
   INSTANCE;
@@ -102,7 +104,7 @@ enum StatisticsProvider implements Function<Set<Waypoint>, TrailStatistics> {
             points, activePoints, activeUp, activeDown, activeFlat, this::getTimeDifference);
     final Statistics gradeStats =
         computeStatistics(points, activePoints, activeUp, activeDown, activeFlat, this::getGrade);
-    return new TrailStatisticsImpl(
+    return new TrailStatistics(
         timeStats, distStats, eleStats, eleDiffStats, speedStats, gradeStats);
   }
 
@@ -119,13 +121,13 @@ enum StatisticsProvider implements Function<Set<Waypoint>, TrailStatistics> {
     final SummaryStatistics downStats = getSummary(down, func);
     final SummaryStatistics flatStats = getSummary(flat, func);
     final Set<Waypoint> outliers = getOutliers(active, activeStats, func);
-    return new StatisticsImpl(allStats, activeStats, upStats, downStats, flatStats, outliers);
+    return new Statistics(allStats, activeStats, upStats, downStats, flatStats, outliers);
   }
 
   private SummaryStatistics getSummary(
       final Set<Waypoint> points, final Function<Waypoint, Double> func) {
     final SummaryStatistics stats = new SummaryStatistics();
-    points.stream().map(func).filter(i -> i != null).forEach(stats::addValue);
+    points.stream().map(func).filter(Objects::nonNull).forEach(stats::addValue);
     return stats;
   }
 
@@ -134,7 +136,7 @@ enum StatisticsProvider implements Function<Set<Waypoint>, TrailStatistics> {
   }
 
   private Double getElevation(final Waypoint point) {
-    return point.getCoordinates().getElevation();
+    return point.getRecord().getElevation();
   }
 
   private double getGrade(final Waypoint point) {
@@ -153,7 +155,7 @@ enum StatisticsProvider implements Function<Set<Waypoint>, TrailStatistics> {
     return point.getTimeDifference();
   }
 
-  private Set<Waypoint> getOutliers(
+  public Set<Waypoint> getOutliers(
       final Set<Waypoint> points,
       final SummaryStatistics stats,
       final Function<Waypoint, Double> func) {

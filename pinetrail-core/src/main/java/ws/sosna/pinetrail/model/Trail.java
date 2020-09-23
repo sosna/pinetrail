@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import ws.sosna.pinetrail.analysis.TrailStatistics;
 
 /**
  * A collection of {@code Waypoint}s describing the trail.

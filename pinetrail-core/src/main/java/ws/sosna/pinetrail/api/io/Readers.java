@@ -44,7 +44,7 @@ public enum Readers {
   Readers() {
     LOGGER.info(
         Markers.CONFIG.getMarker(),
-        "{} | {} | Created a registry " + "for accessing readers services.",
+        "{} | {} | Created a registry of readers services.",
         Actions.CREATE,
         StatusCodes.OK.getCode());
     this.providers = new EnumMap<>(Formats.class);
@@ -92,7 +92,7 @@ public enum Readers {
     providers.putIfAbsent(format, provider);
     LOGGER.info(
         Markers.CONFIG.getMarker(),
-        "{} | {} | Registered a " + "provider of readers for {} ({}).",
+        "{} | {} | Registered a provider of readers for {} ({}).",
         Actions.REGISTER,
         StatusCodes.OK.getCode(),
         format,

@@ -16,13 +16,11 @@
  */
 package ws.sosna.pinetrail.model;
 
-import java.time.Instant;
 import javax.validation.Valid;
 import javax.validation.constraints.DecimalMax;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Past;
 
 /**
  * An individual point of a {@code Trail}, typically recorded by a GPS device.
@@ -38,7 +36,6 @@ import javax.validation.constraints.Past;
  * Waypoint pt = new WaypointBuilder(time, coordinates).build();
  * </code>
  *
- * @see Trail
  * @see WaypointBuilder
  * @author Xavier Sosnovsky
  */
@@ -53,18 +50,7 @@ public interface Waypoint extends Comparable<Waypoint> {
    */
   @NotNull(message = "{Model.Waypoint.Coordinates.NotNull}")
   @Valid
-  Coordinates getCoordinates();
-
-  /**
-   * The point in time when the coordinates were measured.
-   *
-   * <p>The timestamp cannot be null and must be in the past (no kidding).
-   *
-   * @return the point in time when the coordinates were measured
-   */
-  @Past(message = "{Model.Waypoint.Time.Past}")
-  @NotNull(message = "{Model.Waypoint.Time.NotNull}")
-  Instant getTime();
+  GpsRecord getRecord();
 
   /**
    * The elapsed time in seconds since the previous waypoint.

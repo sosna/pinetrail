@@ -20,7 +20,7 @@ package ws.sosna.pinetrail.api.io;
  *
  * <p>This is the service provider interface (SPI), introduced with Java SE 6. Implementations
  * should register themselves, by placing a text file called
- * ws.sosna.pinetrail.api.ReaderProvider below META-INF/services. See Java Service Provider
+ * ws.sosna.pinetrail.api.io.ReaderProvider below META-INF/services. See Java Service Provider
  * implementations (SPI) for additional information.
  *
  * @author Xavier Sosnovsky

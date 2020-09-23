@@ -32,11 +32,4 @@ public class WritersTest {
   public void unsupportedFormat() {
     Writers.valueOf("INSTANCE").newWriter(Formats.valueOf("KML_2_2_0"));
   }
-
-  @Test
-  public void getAndConfigureWriter() {
-    final WriterSettings settings = new WriterSettingsBuilder().overwriteIfExists(false).build();
-    final Writer writer = Writers.INSTANCE.newWriter(Formats.GPX_1_1).configure(settings);
-    assertNotNull(writer);
-  }
 }

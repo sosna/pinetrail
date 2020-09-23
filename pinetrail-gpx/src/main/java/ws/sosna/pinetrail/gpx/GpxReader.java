@@ -22,8 +22,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ws.sosna.pinetrail.api.io.Reader;
-import ws.sosna.pinetrail.api.io.ReaderSettings;
-import ws.sosna.pinetrail.model.Trail;
+import ws.sosna.pinetrail.model.GpsRecord;
 import ws.sosna.pinetrail.utils.error.ExecutionError;
 import ws.sosna.pinetrail.utils.logging.Actions;
 import ws.sosna.pinetrail.utils.logging.Markers;
@@ -37,25 +36,16 @@ import ws.sosna.pinetrail.utils.logging.StatusCodes;
 class GpxReader implements Reader {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GpxReader.class);
-  private boolean groupSubTrails;
   private final GPX.Version version;
 
   GpxReader(final GPX.Version version) {
     super();
-    groupSubTrails = false;
     this.version = version;
   }
 
   /** {@inheritDoc} */
   @Override
-  public Reader configure(final ReaderSettings settings) {
-    groupSubTrails = settings.groupSubTrails();
-    return this;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Set<Trail> apply(final Path fileLocation) {
+  public Set<GpsRecord> apply(final Path fileLocation) {
     try {
       LOGGER.info(
           Markers.IO.getMarker(),
@@ -67,7 +57,7 @@ class GpxReader implements Reader {
       final GPX gpx = GPX.reader(version).read(fileLocation);
       final long parsingTime = System.currentTimeMillis() - start;
       final long startMapping = System.currentTimeMillis();
-      final Set<Trail> trails = new FromJpx(groupSubTrails).mapToTrails(gpx);
+      final Set<GpsRecord> records = new FromJpx().map(gpx);
       final long end = System.currentTimeMillis();
       LOGGER.info(
           Markers.PERFORMANCE.getMarker(),
@@ -83,7 +73,7 @@ class GpxReader implements Reader {
               + " - mapping: "
               + (end - startMapping)
               + ")");
-      return trails;
+      return records;
     } catch (IOException e) {
       throw new ExecutionError(
           "Could not read file", e, Markers.IO.getMarker(), Actions.GET, StatusCodes.SYNTAX_ERROR);

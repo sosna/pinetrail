@@ -16,124 +16,44 @@
 package ws.sosna.pinetrail.gpx;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import io.jenetics.jpx.GPX;
-import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
-import java.util.prefs.Preferences;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import ws.sosna.pinetrail.model.Trail;
-import ws.sosna.pinetrail.model.Waypoint;
+import ws.sosna.pinetrail.model.GpsRecord;
 
 /** @author Xavier Sosnovsky */
 public class FromJpxTest {
 
-  private static Boolean keepOutliers;
-  private static Boolean keepIdlePoints;
-  private static String userLevel;
-
-  @BeforeClass
-  public static void setup() {
-    keepOutliers =
-        Boolean.valueOf(
-            Preferences.userRoot()
-                .node("ws.sosna.pinetrail.model.Trail")
-                .get("keepOutliers", "false"));
-    Preferences.userRoot().node("ws.sosna.pinetrail.model.Trail").put("keepOutliers", "true");
-    keepIdlePoints =
-        Boolean.valueOf(
-            Preferences.userRoot()
-                .node("ws.sosna.pinetrail.model.Trail")
-                .get("keepIdlePoints", "false"));
-    Preferences.userRoot().node("ws.sosna.pinetrail.model.Trail").put("keepIdlePoints", "true");
-    userLevel =
-        Preferences.userRoot().node("ws.sosna.pinetrail.UserSettings").get("level", "INTERMEDIATE");
-  }
-
-  @AfterClass
-  public static void cleanup() {
-    Preferences.userRoot()
-        .node("ws.sosna.pinetrail.model.Trail")
-        .put("keepOutliers", keepOutliers.toString());
-    Preferences.userRoot()
-        .node("ws.sosna.pinetrail.model.Trail")
-        .put("keepIdlePoints", keepIdlePoints.toString());
-    Preferences.userRoot().node("ws.sosna.pinetrail.UserSettings").put("level", userLevel);
-  }
-
   @Test
-  public void mapGpxType() throws IOException {
-    Preferences.userRoot().node("ws.sosna.pinetrail.UserSettings").put("level", "INTERMEDIATE");
+  public void map() {
+    final Instant t1 = Instant.parse("2014-05-18T08:25:32Z");
+    final Instant t2 = Instant.parse("2014-05-18T12:06:55Z");
     final GPX gpx =
-        GPX.read(
-            FileSystems.getDefault().getPath(".", "src/test/resources/2014-05-18_Wispertal.gpx"));
-    final FromJpx mapper = new FromJpx(false);
-    final Set<Trail> trails = mapper.mapToTrails(gpx);
-    assertEquals(1, trails.size());
-    for (final Trail trail : trails) {
-      assertEquals(779, trail.getWaypoints().size());
-      final List<Waypoint> list = new ArrayList<>(trail.getWaypoints());
-      final Waypoint first = list.get(0);
-      final Waypoint last = list.get(list.size() - 1);
-      assertEquals(Instant.parse("2014-05-18T08:25:32Z"), first.getTime());
-      assertEquals(Double.parseDouble("50.1181208342"), first.getCoordinates().getLatitude(), 0);
-      assertEquals(Double.parseDouble("7.9630853701"), first.getCoordinates().getLongitude(), 0);
-      assertEquals(Instant.parse("2014-05-18T12:06:55Z"), last.getTime());
-      assertEquals(Double.parseDouble("50.1181969419"), last.getCoordinates().getLatitude(), 0);
-      assertEquals(Double.parseDouble("7.9630940873"), last.getCoordinates().getLongitude(), 0);
-    }
-  }
-
-  @Test
-  public void ignoreInvalidPoint() throws IOException {
-    final GPX gpx =
-        GPX.read(
-            FileSystems.getDefault()
-                .getPath(".", "src/test/resources/2014-05-18_Wispertal_NotValidBusinessRules.gpx"));
-    final FromJpx mapper = new FromJpx(false);
-    final Set<Trail> trails = mapper.mapToTrails(gpx);
-    assertEquals(1, trails.size());
-    for (final Trail trail : trails) {
-      assertEquals(778, trail.getWaypoints().size());
-      final List<Waypoint> list = new ArrayList<>(trail.getWaypoints());
-      final Waypoint first = list.get(0);
-      final Waypoint last = list.get(list.size() - 1);
-      assertEquals(Instant.parse("2014-05-18T08:25:32Z"), first.getTime());
-      assertEquals(Double.parseDouble("50.1181208342"), first.getCoordinates().getLatitude(), 0);
-      assertEquals(Double.parseDouble("7.9630853701"), first.getCoordinates().getLongitude(), 0);
-      assertEquals(Instant.parse("2014-05-18T12:06:55Z"), last.getTime());
-      assertEquals(Double.parseDouble("50.1181969419"), last.getCoordinates().getLatitude(), 0);
-      assertEquals(Double.parseDouble("7.9630940873"), last.getCoordinates().getLongitude(), 0);
-    }
-  }
-
-  @Test
-  public void ignoreMissingElevation() throws IOException {
-    final GPX gpx =
-        GPX.read(
-            FileSystems.getDefault()
-                .getPath(".", "src/test/resources/2014-05-18_Wispertal_MissingElevation.gpx"));
-    final FromJpx mapper = new FromJpx(false);
-    final Set<Trail> trails = mapper.mapToTrails(gpx);
-    assertEquals(1, trails.size());
-    for (final Trail trail : trails) {
-      assertEquals(779, trail.getWaypoints().size());
-      final List<Waypoint> list = new ArrayList<>(trail.getWaypoints());
-      final Waypoint first = list.get(0);
-      final Waypoint last = list.get(list.size() - 1);
-      assertEquals(Instant.parse("2014-05-18T08:25:32Z"), first.getTime());
-      assertEquals(Double.parseDouble("50.1181208342"), first.getCoordinates().getLatitude(), 0);
-      assertEquals(Double.parseDouble("7.9630853701"), first.getCoordinates().getLongitude(), 0);
-      assertEquals(Instant.parse("2014-05-18T12:06:55Z"), last.getTime());
-      assertEquals(Double.parseDouble("50.1181969419"), last.getCoordinates().getLatitude(), 0);
-      assertEquals(Double.parseDouble("7.9630940873"), last.getCoordinates().getLongitude(), 0);
+        GPX.builder()
+            .addTrack(
+                track ->
+                    track.addSegment(
+                        segment ->
+                            segment
+                                .addPoint(p -> p.lat(48.2081743).lon(16.3738189).ele(160).time(t1))
+                                .addPoint(p -> p.lat(48.2081742).lon(16.373819).ele(161).time(t2))))
+            .build();
+    final FromJpx mapper = new FromJpx();
+    final Set<GpsRecord> records = mapper.map(gpx);
+    assertEquals(2, records.size());
+    for (final GpsRecord rec : records) {
+      if (rec.getTime().equals(t1)) {
+        assertEquals(Double.parseDouble("48.2081743"), rec.getLatitude(), 0);
+        assertEquals(Double.parseDouble("16.3738189"), rec.getLongitude(), 0);
+        assertEquals(Double.parseDouble("160"), rec.getElevation(), 0);
+      } else {
+        assertEquals(t2, rec.getTime());
+        assertEquals(Double.parseDouble("48.2081742"), rec.getLatitude(), 0);
+        assertEquals(Double.parseDouble("16.373819"), rec.getLongitude(), 0);
+        assertEquals(Double.parseDouble("161"), rec.getElevation(), 0);
+      }
     }
   }
 }

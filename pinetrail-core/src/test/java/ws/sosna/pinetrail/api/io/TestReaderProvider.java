@@ -18,7 +18,7 @@ package ws.sosna.pinetrail.api.io;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Set;
-import ws.sosna.pinetrail.model.Trail;
+import ws.sosna.pinetrail.model.GpsRecord;
 
 /** @author Xavier Sosnovsky */
 public class TestReaderProvider implements ReaderProvider {
@@ -39,12 +39,7 @@ public class TestReaderProvider implements ReaderProvider {
     }
 
     @Override
-    public Reader configure(final ReaderSettings settings) {
-      return this;
-    }
-
-    @Override
-    public Set<Trail> apply(final Path fileLocation) {
+    public Set<GpsRecord> apply(final Path fileLocation) {
       return Collections.EMPTY_SET;
     }
   }

@@ -1,4 +1,4 @@
-package ws.sosna.pinetrail.model;
+package ws.sosna.pinetrail.analysis;
 
 /*
  * Copyright (c) 2014, Xavier Sosnovsky <xso@sosna.ws>
@@ -17,19 +17,14 @@ package ws.sosna.pinetrail.model;
  */
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.time.Instant;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.junit.Test;
+import ws.sosna.pinetrail.model.GpsRecord;
+import ws.sosna.pinetrail.model.Waypoint;
 
 /** @author Xavier Sosnovsky */
 public class TrailStatisticsImplTest {
@@ -100,65 +95,13 @@ public class TrailStatisticsImplTest {
     assertEquals(2, grade.getActiveFlat().getN());
   }
 
-  @Test
-  public void serialize() throws IOException, ClassNotFoundException {
-    final TrailStatistics stats = getStats();
-
-    final ByteArrayOutputStream out = new ByteArrayOutputStream();
-    final ObjectOutputStream oos = new ObjectOutputStream(out);
-    oos.writeObject(stats);
-    oos.close();
-
-    final byte[] recovered = out.toByteArray();
-    final InputStream in = new ByteArrayInputStream(recovered);
-    final ObjectInputStream ois = new ObjectInputStream(in);
-    final TrailStatistics recoveredStats = (TrailStatistics) ois.readObject();
-
-    assertEquals(stats, recoveredStats);
-  }
-
-  @Test
-  public void checkEquality() {
-    final TrailStatistics stats1 = getStats();
-    final TrailStatistics stats2 = getStats();
-    final TrailStatistics stats3 = getStats2();
-    assertEquals(stats1, stats2);
-    assertFalse(stats1.equals(stats3));
-  }
-
-  @Test
-  public void checkHashcode() {
-    final TrailStatistics stats1 = getStats();
-    final TrailStatistics stats2 = getStats();
-    final TrailStatistics stats3 = getStats2();
-    assertEquals(stats1.hashCode(), stats2.hashCode());
-    assertFalse(stats1.hashCode() == stats3.hashCode());
-  }
-
-  @Test
-  public void checkNullEquality() {
-    final TrailStatistics stats1 = getStats();
-    assertFalse(stats1.equals(null));
-  }
-
-  @Test
-  public void checkTypeEquality() {
-    final TrailStatistics stats1 = getStats();
-    assertFalse(stats1.equals("test"));
-  }
-
   private TrailStatistics getStats() {
     final SortedSet<Waypoint> points = PointsAugmenter.INSTANCE.apply(getTestPoints());
     return StatisticsProvider.valueOf("INSTANCE").apply(points);
   }
 
-  private TrailStatistics getStats2() {
-    final SortedSet<Waypoint> points = PointsAugmenter.INSTANCE.apply(getTestPoints2());
-    return StatisticsProvider.valueOf("INSTANCE").apply(points);
-  }
-
-  private SortedSet<Waypoint> getTestPoints() {
-    final SortedSet<Waypoint> points = new TreeSet<>();
+  private SortedSet<GpsRecord> getTestPoints() {
+    final SortedSet<GpsRecord> points = new TreeSet<>();
     points.add(getPoint(7.9630853701, 50.1181208342, 214.03, "2014-05-18T08:25:32Z"));
     points.add(getPoint(7.9629951809, 50.1181007177, 215.47, "2014-05-18T08:26:14Z"));
     points.add(getPoint(7.9631012119, 50.1183273643, 216.43, "2014-05-18T08:27:02Z"));
@@ -167,19 +110,7 @@ public class TrailStatisticsImplTest {
     return points;
   }
 
-  private SortedSet<Waypoint> getTestPoints2() {
-    final SortedSet<Waypoint> points = new TreeSet<>();
-    points.add(getPoint(7.9630853701, 50.1181208342, 214.03, "2014-05-18T09:25:32Z"));
-    points.add(getPoint(7.9629951809, 50.1181007177, 216.47, "2014-05-18T09:26:54Z"));
-    points.add(getPoint(7.9631012119, 50.1183273643, 216.43, "2014-05-18T09:27:32Z"));
-    points.add(getPoint(7.9631571192, 50.1184399333, 214.47, "2014-05-18T09:27:59Z"));
-    points.add(getPoint(7.9631261062, 50.1186041348, 215.95, "2014-05-18T09:28:26Z"));
-    return points;
-  }
-
-  private Waypoint getPoint(final double x, final double y, final double z, final String time) {
-    return new WaypointBuilder(
-            Instant.parse(time), new CoordinatesBuilder(x, y).elevation(z).build())
-        .build();
+  private GpsRecord getPoint(final double x, final double y, final double z, final String time) {
+    return GpsRecord.of(Instant.parse(time), x, y, z);
   }
 }

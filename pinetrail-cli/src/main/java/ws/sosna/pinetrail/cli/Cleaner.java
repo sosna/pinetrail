@@ -28,13 +28,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ws.sosna.pinetrail.api.io.Formats;
 import ws.sosna.pinetrail.api.io.Reader;
-import ws.sosna.pinetrail.api.io.ReaderSettings;
-import ws.sosna.pinetrail.api.io.ReaderSettingsBuilder;
 import ws.sosna.pinetrail.api.io.Readers;
 import ws.sosna.pinetrail.api.io.Writer;
-import ws.sosna.pinetrail.api.io.WriterSettings;
-import ws.sosna.pinetrail.api.io.WriterSettingsBuilder;
 import ws.sosna.pinetrail.api.io.Writers;
+import ws.sosna.pinetrail.model.GpsRecord;
 import ws.sosna.pinetrail.model.Trail;
 import ws.sosna.pinetrail.utils.logging.Actions;
 import ws.sosna.pinetrail.utils.logging.Markers;
@@ -234,8 +231,6 @@ final class Cleaner implements Runnable {
   }
 
   private Results processJob(final Path path) {
-    final ReaderSettings settings =
-        new ReaderSettingsBuilder().groupSubTrails(groupSubTrails).crossBorder(crossBorder).build();
     final Formats format = Formats.of(path);
     final Reader reader = Readers.INSTANCE.newReader(format);
     if (null == reader) {
@@ -247,32 +242,19 @@ final class Cleaner implements Runnable {
           "Could not find reader for " + path.toString());
       return null;
     } else {
-      final Set<Trail> trails = reader.configure(settings).apply(path);
-      if (0 == trails.size()) {
+      final Set<GpsRecord> records = reader.apply(path);
+      if (0 == records.size()) {
         return null;
       } else {
-        return new Results(path, trails);
+        return new Results(path, records);
       }
     }
   }
 
   private void handleResults(final Results results) {
     final Writer writer = Writers.INSTANCE.newWriter(Formats.GPX_1_1);
-    final WriterSettings settings =
-        new WriterSettingsBuilder()
-            .writeIdlePoints(keepIdlePoints)
-            .writeOutliers(keepOutliers)
-            .prettyPrinting(prettyPrinting)
-            .writeRoute(writeRoute)
-            .build();
-    writer.configure(settings);
-
-    int counter = results.trails.size() > 1 ? 1 : 0;
-
-    for (final Trail trail : results.trails) {
-      writer.accept(trail, getOutname(counter, results.path.toString()));
-      counter++;
-    }
+    int counter = results.records.size() > 1 ? 1 : 0;
+    writer.accept(results.records, getOutname(counter, results.path.toString()));
 
     if (!isQuiet) {
       for (final Trail trail : results.trails) {
@@ -328,12 +310,12 @@ final class Cleaner implements Runnable {
   private static final class Results {
 
     private final Path path;
-    private final Set<Trail> trails;
+    private final Set<GpsRecord> records;
 
-    Results(final Path path, final Set<Trail> trails) {
+    Results(final Path path, final Set<GpsRecord> records) {
       super();
       this.path = path;
-      this.trails = trails;
+      this.records = records;
     }
   }
 }

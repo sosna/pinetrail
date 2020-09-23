@@ -13,7 +13,7 @@
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-package ws.sosna.pinetrail.model;
+package ws.sosna.pinetrail.analysis;
 
 import static org.junit.Assert.assertTrue;
 
@@ -21,31 +21,29 @@ import java.time.Instant;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.junit.Test;
+import ws.sosna.pinetrail.model.GpsRecord;
 
 /** @author Xavier Sosnovsky */
 public class ElevationFixerTest {
 
   @Test
   public void testApply() {
-    final SortedSet<Waypoint> points = getWaypoints();
+    final SortedSet<GpsRecord> points = getWaypoints();
     final ElevationFixer instance = ElevationFixer.INSTANCE;
-    final SortedSet<Waypoint> augmentedPoints = instance.apply(points);
-    for (final Waypoint point : augmentedPoints) {
-      if (null != point.getCoordinates().getElevation()) {
-        assertTrue(
-            110.61 <= point.getCoordinates().getElevation()
-                && 114.16 >= point.getCoordinates().getElevation());
+    final SortedSet<GpsRecord> augmentedPoints = instance.apply(points);
+    for (final GpsRecord point : augmentedPoints) {
+      if (null != point.getElevation()) {
+        assertTrue(110.61 <= point.getElevation() && 114.16 >= point.getElevation());
       }
     }
   }
 
-  private Waypoint createWaypoint(final double latitude, final double longitude) {
-    final Coordinates coordinates = new CoordinatesBuilder(longitude, latitude).build();
-    return new WaypointBuilder(Instant.EPOCH, coordinates).build();
+  private GpsRecord createWaypoint(final double latitude, final double longitude) {
+    return GpsRecord.of(Instant.EPOCH, longitude, latitude);
   }
 
-  private SortedSet<Waypoint> getWaypoints() {
-    final SortedSet<Waypoint> points = new TreeSet<>();
+  private SortedSet<GpsRecord> getWaypoints() {
+    final SortedSet<GpsRecord> points = new TreeSet<>();
     points.add(createWaypoint(50.1834285166, 8.7450412475));
     points.add(createWaypoint(50.1834630501, 8.7450394034));
     points.add(createWaypoint(50.1833731122, 8.7450366374));

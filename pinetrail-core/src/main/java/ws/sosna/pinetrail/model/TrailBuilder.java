@@ -15,9 +15,6 @@
  */
 package ws.sosna.pinetrail.model;
 
-import java.io.InvalidObjectException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -32,6 +29,11 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ws.sosna.pinetrail.analysis.CountryGuesser;
+import ws.sosna.pinetrail.analysis.ElevationFixer;
+import ws.sosna.pinetrail.analysis.PointsAugmenter;
+import ws.sosna.pinetrail.analysis.StatisticsProvider;
+import ws.sosna.pinetrail.analysis.TrailStatistics;
 import ws.sosna.pinetrail.utils.logging.Actions;
 import ws.sosna.pinetrail.utils.logging.Markers;
 import ws.sosna.pinetrail.utils.logging.StatusCodes;
@@ -57,8 +59,9 @@ import ws.sosna.pinetrail.utils.logging.StatusCodes;
  * @see Trail
  * @author Xavier Sosnovsky
  */
-public final class TrailBuilder implements Builder<Trail> {
+public final class TrailBuilder {
 
+  private Set<GpsRecord> records;
   private Set<Waypoint> points;
   private Set<String> countries;
   private static final Logger LOGGER = LoggerFactory.getLogger(TrailBuilder.class);
@@ -68,54 +71,12 @@ public final class TrailBuilder implements Builder<Trail> {
    *
    * <p>The collection of {@code waypoints} cannot be null or empty.
    *
-   * @param points the ordered list of points describing the trail
+   * @param records the ordered list of points describing the trail
    */
-  public TrailBuilder(final Set<Waypoint> points) {
+  public TrailBuilder(final Set<GpsRecord> records) {
     super();
-    this.points = points;
-  }
-
-  /**
-   * Sets the ordered list of points describing the trail.
-   *
-   * <p>The list cannot be null and must contain at least one waypoint. The points will be sorted by
-   * time, in ascending order.
-   *
-   * @param points the ordered list of points describing the trail
-   * @return the builder, with the updated collection of points
-   */
-  public TrailBuilder points(final Set<Waypoint> points) {
-    this.points = points;
-    return this;
-  }
-
-  /**
-   * Sets the list of countries crossed by the trail.
-   *
-   * <p>Each item in the set represents an ISO 3166-1 two-letter country codes. In case no country
-   * has been assigned, the method returns an empty collection.
-   *
-   * @param countries the list of countries crossed by the trail
-   * @return the builder, with an updated country list
-   */
-  public TrailBuilder countries(final Set<String> countries) {
-    this.countries = countries;
-    return this;
-  }
-
-  /**
-   * Instantiate a new TrailBuilder out of an existing {@code Trail} instance.
-   *
-   * <p>All objects are immutable and, therefore cannot be updated. This method is a convenience
-   * method that creates a new builder with the same values as the supplied {@code Trail}. The
-   * setters methods of the builder can then be used to update some fields before calling the {@code
-   * build} method.
-   *
-   * @param trail the trail from which the values will be copied
-   * @return a new TrailBuilder
-   */
-  public static TrailBuilder of(final Trail trail) {
-    return new TrailBuilder(trail.getWaypoints()).countries(trail.getCountries());
+    this.records = records;
+    this.points = new LinkedHashSet<>();
   }
 
   /**
@@ -123,20 +84,19 @@ public final class TrailBuilder implements Builder<Trail> {
    *
    * @return a new immutable instance of the Trail interface
    */
-  @Override
   public Trail build() {
     final boolean skip =
-        Boolean.valueOf(
+        Boolean.parseBoolean(
             Preferences.userRoot()
                 .node("ws.sosna.pinetrail.model.Trail")
                 .get("keepOutliers", "false"));
     final int iterations =
-        Integer.valueOf(
+        Integer.parseInt(
             Preferences.userRoot()
                 .node("ws.sosna.pinetrail.model.Trail")
                 .get("cleanupPasses", "3"));
     final boolean removeIdle =
-        !(Boolean.valueOf(
+        !(Boolean.parseBoolean(
             Preferences.userRoot()
                 .node("ws.sosna.pinetrail.model.Trail")
                 .get("keepIdlePoints", "false")));
@@ -151,11 +111,11 @@ public final class TrailBuilder implements Builder<Trail> {
   }
 
   private Trail createTrail(final int iteration, final boolean removeIdle) {
-    final SortedSet<Waypoint> sortedPoints =
-        null == points ? Collections.emptySortedSet() : new TreeSet(points);
+    final SortedSet<GpsRecord> sortedPoints =
+        records.stream().sorted().collect(Collectors.toCollection(TreeSet::new));
 
     final long start = System.currentTimeMillis();
-    final SortedSet<Waypoint> elePoints =
+    final SortedSet<GpsRecord> elePoints =
         0 == iteration ? ElevationFixer.INSTANCE.apply(sortedPoints) : sortedPoints;
 
     final long eleTs = System.currentTimeMillis();
@@ -172,15 +132,23 @@ public final class TrailBuilder implements Builder<Trail> {
           Actions.ANALYSE,
           StatusCodes.OK.getCode(),
           (augmentedPoints.size() - activePoints.size()));
+      final SortedSet<GpsRecord> activeRecords =
+          augmentedPoints.stream()
+              .map(Waypoint::getRecord)
+              .collect(Collectors.toCollection(TreeSet::new));
       augmentedPoints.clear();
-      augmentedPoints.addAll(PointsAugmenter.INSTANCE.apply(activePoints));
+      augmentedPoints.addAll(PointsAugmenter.INSTANCE.apply(activeRecords));
     }
 
     final long augmentTs = System.currentTimeMillis();
     final TrailStatistics trailStatistics = StatisticsProvider.INSTANCE.apply(augmentedPoints);
 
     final long statsTs = System.currentTimeMillis();
-    augmentTrail(trailStatistics, augmentedPoints);
+    final SortedSet<GpsRecord> records =
+        augmentedPoints.stream()
+            .map(Waypoint::getRecord)
+            .collect(Collectors.toCollection(TreeSet::new));
+    augmentTrail(records);
     final long guessTs = System.currentTimeMillis();
 
     LOGGER.info(
@@ -225,7 +193,7 @@ public final class TrailBuilder implements Builder<Trail> {
     }
   }
 
-  private void augmentTrail(final TrailStatistics stats, final SortedSet<Waypoint> points) {
+  private void augmentTrail(final SortedSet<GpsRecord> points) {
     if (null == countries || countries.isEmpty()) {
       countries = CountryGuesser.INSTANCE.apply(points);
     }
@@ -265,9 +233,8 @@ public final class TrailBuilder implements Builder<Trail> {
     return outliers.size() > 0;
   }
 
-  private static final class TrailImpl implements Trail, Serializable {
+  private static final class TrailImpl implements Trail {
 
-    private static final long serialVersionUID = -5323040838868491171L;
     private final SortedSet<Waypoint> points;
     private final Set<String> countries;
     private final transient int hashCode;
@@ -308,9 +275,9 @@ public final class TrailBuilder implements Builder<Trail> {
         return false;
       }
       TrailImpl trail = (TrailImpl) o;
-      return Objects.equals(points, trail.points) &&
-          Objects.equals(countries, trail.countries) &&
-          Objects.equals(stats, trail.stats);
+      return Objects.equals(points, trail.points)
+          && Objects.equals(countries, trail.countries)
+          && Objects.equals(stats, trail.stats);
     }
 
     @Override
@@ -321,33 +288,6 @@ public final class TrailBuilder implements Builder<Trail> {
     @Override
     public String toString() {
       return "Trail{points=" + points + ", countries=" + countries + ", statistics=" + stats + '}';
-    }
-
-    private Object writeReplace() {
-      return new SerializationProxy(this);
-    }
-
-    private void readObject(final ObjectInputStream stream) throws InvalidObjectException {
-      throw new InvalidObjectException("Proxy required");
-    }
-
-    private static final class SerializationProxy implements Serializable {
-
-      private static final long serialVersionUID = -5323040838868491171L;
-      private final SortedSet<Waypoint> points;
-      private final Set<String> countries;
-      private final TrailStatistics stats;
-
-      SerializationProxy(final Trail trail) {
-        super();
-        points = trail.getWaypoints();
-        countries = trail.getCountries();
-        stats = trail.getStatistics();
-      }
-
-      private Object readResolve() {
-        return new TrailImpl(points, countries, stats);
-      }
     }
   }
 }

@@ -13,7 +13,7 @@
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-package ws.sosna.pinetrail.model;
+package ws.sosna.pinetrail.analysis;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -40,6 +40,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import ws.sosna.pinetrail.model.GpsRecord;
 import ws.sosna.pinetrail.utils.error.ExecutionError;
 import ws.sosna.pinetrail.utils.logging.Actions;
 import ws.sosna.pinetrail.utils.logging.Markers;
@@ -54,7 +55,7 @@ import ws.sosna.pinetrail.utils.logging.StatusCodes;
  *
  * @author Xavier Sosnovsky
  */
-enum ElevationFixer implements Function<SortedSet<Waypoint>, SortedSet<Waypoint>> {
+public enum ElevationFixer implements Function<SortedSet<GpsRecord>, SortedSet<GpsRecord>> {
 
   /** Singleton that returns an instance of the ElevationFixer. */
   INSTANCE;
@@ -73,10 +74,10 @@ enum ElevationFixer implements Function<SortedSet<Waypoint>, SortedSet<Waypoint>
    * @return the points that make up the trail, with corrected elevation data
    */
   @Override
-  public SortedSet<Waypoint> apply(final SortedSet<Waypoint> points) {
+  public SortedSet<GpsRecord> apply(final SortedSet<GpsRecord> points) {
     final String key =
         Preferences.userRoot().node("ws.sosna.pinetrail.UserSettings").get("mapQuestKey", "");
-    final SortedSet<Waypoint> response = new TreeSet<>();
+    final SortedSet<GpsRecord> response = new TreeSet<>();
     if (key.isEmpty()) {
       LOGGER.warn(
           Markers.MODEL.getMarker(),
@@ -105,7 +106,7 @@ enum ElevationFixer implements Function<SortedSet<Waypoint>, SortedSet<Waypoint>
             "Successfully retrieved elevation data with MapQuest");
       } catch (final ExecutionError e) {
         if (StatusCodes.NOT_ACCEPTABLE == e.getErrorCode()) {
-          final Set<SortedSet<Waypoint>> slices = new LinkedHashSet<>();
+          final Set<SortedSet<GpsRecord>> slices = new LinkedHashSet<>();
           final int idx = Math.round(points.size() / 3);
           LOGGER.info(
               Markers.MODEL.getMarker(),
@@ -113,11 +114,11 @@ enum ElevationFixer implements Function<SortedSet<Waypoint>, SortedSet<Waypoint>
               Actions.ANALYSE,
               StatusCodes.NOT_ACCEPTABLE.getCode(),
               "Route is too long for MapQuest. It will be " + " splitted and resubmitted again.");
-          final List<Waypoint> ls = new ArrayList<>(points);
+          final List<GpsRecord> ls = new ArrayList<>(points);
           slices.add(new TreeSet(ls.subList(0, idx)));
           slices.add(new TreeSet(ls.subList(idx, idx * 2)));
           slices.add(new TreeSet(ls.subList(idx * 2, points.size())));
-          for (final SortedSet<Waypoint> slice : slices) {
+          for (final SortedSet<GpsRecord> slice : slices) {
             try {
               Thread.sleep(1500);
             } catch (final InterruptedException ex) {
@@ -262,7 +263,7 @@ enum ElevationFixer implements Function<SortedSet<Waypoint>, SortedSet<Waypoint>
         if (nNode.getNodeType() == Node.ELEMENT_NODE) {
           final Element eElement = (Element) nNode;
           final String msg = eElement.getTextContent();
-          if (-1 < msg.indexOf("maximum allowed distance")) {
+          if (msg.contains("maximum allowed distance")) {
             throw new ExecutionError(
                 "Route is too long and need " + "to be splitted",
                 null,
@@ -283,14 +284,14 @@ enum ElevationFixer implements Function<SortedSet<Waypoint>, SortedSet<Waypoint>
     return elevations;
   }
 
-  private String compressPoints(final Set<Waypoint> points) {
+  private String compressPoints(final Set<GpsRecord> points) {
     int oldLat = 0;
     int oldLng = 0;
     final StringBuilder encoded = new StringBuilder();
     final double precision = Math.pow(10, 6);
-    for (final Waypoint point : points) {
-      final int lat = (int) Math.round(point.getCoordinates().getLatitude() * precision);
-      final int lng = (int) Math.round(point.getCoordinates().getLongitude() * precision);
+    for (final GpsRecord point : points) {
+      final int lat = (int) Math.round(point.getLatitude() * precision);
+      final int lng = (int) Math.round(point.getLongitude() * precision);
       encoded.append(encodeNumber(lat - oldLat));
       encoded.append(encodeNumber(lng - oldLng));
       oldLat = lat;
@@ -313,8 +314,8 @@ enum ElevationFixer implements Function<SortedSet<Waypoint>, SortedSet<Waypoint>
     return encoded.toString();
   }
 
-  private SortedSet<Waypoint> replaceElevation(
-      final Set<Waypoint> points, final List<Double> elevations) {
+  private SortedSet<GpsRecord> replaceElevation(
+      final Set<GpsRecord> points, final List<Double> elevations) {
     if (points.size() != elevations.size()) {
       throw new ExecutionError(
           "Elevation data is incomplete. Expected "
@@ -327,12 +328,12 @@ enum ElevationFixer implements Function<SortedSet<Waypoint>, SortedSet<Waypoint>
           Actions.GET,
           StatusCodes.NOT_FOUND);
     }
-    final SortedSet<Waypoint> augmentedPoints = new TreeSet<>();
+    final SortedSet<GpsRecord> augmentedPoints = new TreeSet<>();
     int i = 0;
-    for (final Waypoint point : points) {
-      final Coordinates c =
-          CoordinatesBuilder.of(point.getCoordinates()).elevation(elevations.get(i)).build();
-      augmentedPoints.add(WaypointBuilder.of(point).coordinates(c).build());
+    for (final GpsRecord point : points) {
+      augmentedPoints.add(
+          GpsRecord.of(
+              point.getTime(), point.getLongitude(), point.getLatitude(), elevations.get(i)));
       i++;
     }
     return augmentedPoints;

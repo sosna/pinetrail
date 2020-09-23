@@ -44,7 +44,7 @@ public enum Writers {
   Writers() {
     LOGGER.info(
         Markers.CONFIG.getMarker(),
-        "{} | {} | Created a registry " + "for accessing writers services.",
+        "{} | {} | Created a registry for accessing writers services.",
         Actions.CREATE,
         StatusCodes.OK.getCode());
     this.providers = new EnumMap<>(Formats.class);
@@ -92,7 +92,7 @@ public enum Writers {
     providers.putIfAbsent(format, provider);
     LOGGER.info(
         Markers.CONFIG.getMarker(),
-        "{} | {} | Registered a " + "provider of writers for {} ({}).",
+        "{} | {} | Registered a provider of writers for {} ({}).",
         Actions.REGISTER,
         StatusCodes.OK.getCode(),
         format,

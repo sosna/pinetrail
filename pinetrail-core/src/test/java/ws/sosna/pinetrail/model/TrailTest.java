@@ -94,8 +94,7 @@ public class TrailTest {
 
   @Test
   public void equalityPoints() {
-    final Waypoint point1 =
-        newWaypoint(Instant.EPOCH, newCoordinates(18.789654, 40.6784356, 0.0));
+    final Waypoint point1 = newWaypoint(Instant.EPOCH, newCoordinates(18.789654, 40.6784356, 0.0));
     final Set<Waypoint> points1 = new LinkedHashSet<>();
     points1.add(point1);
     final Waypoint point2 = newWaypoint(Instant.EPOCH, newCoordinates(8.789654, 40.6784356, 0.0));
@@ -109,8 +108,7 @@ public class TrailTest {
 
   @Test
   public void hashCodeNOK() {
-    final Waypoint point1 =
-        newWaypoint(Instant.EPOCH, newCoordinates(8.789654, 40.6784356, 0.0));
+    final Waypoint point1 = newWaypoint(Instant.EPOCH, newCoordinates(8.789654, 40.6784356, 0.0));
     final Set<Waypoint> points1 = new LinkedHashSet<>();
     points1.add(point1);
     final Waypoint point2 = newWaypoint(Instant.EPOCH, newCoordinates(18.789654, 40.6784356, 0.0));
@@ -139,10 +137,8 @@ public class TrailTest {
     final Trail trail = newTrail(points, countries);
     System.out.println(trail);
     assertEquals(
-        "Trail{points=[Waypoint{time="
-            + Instant.EPOCH
-            + ", coordinates="
-            + coordinates.toString()
+        "Trail{points=[Waypoint{record="
+            + point.getRecord().toString()
             + ", distance=0.0, elevationDifference=0.0, "
             + "grade=0.0, speed=0.0, isActive=false, timeDifference=0}], "
             + "countries=[DE],"
@@ -197,7 +193,7 @@ public class TrailTest {
     assertEquals(2, trail.getWaypoints().size());
     int count = 0;
     for (final Waypoint point : trail.getWaypoints()) {
-      assertSame(point.getTime(), (0 == count ? Instant.MIN : Instant.EPOCH));
+      assertSame(point.getRecord().getTime(), (0 == count ? Instant.MIN : Instant.EPOCH));
       count++;
     }
   }
@@ -309,41 +305,19 @@ public class TrailTest {
     assertNotNull(trail.getStatistics());
   }
 
-  @Test
-  public void serialize() throws IOException, ClassNotFoundException {
-    final Waypoint point1 =
-        newWaypoint(
-            Instant.parse("2014-05-18T08:27:02Z"),
-            newCoordinates(7.9631012119, 50.1183273643, 216.43));
-    final Waypoint point2 =
-        newWaypoint(
-            Instant.parse("2014-05-18T08:27:09Z"),
-            newCoordinates(7.9631571192, 50.1184399333, 215.47));
-    final Set<Waypoint> points = new LinkedHashSet<>();
-    points.add(point1);
-    points.add(point2);
-    final Trail trail = newTrail(points);
-
-    final ByteArrayOutputStream out = new ByteArrayOutputStream();
-    final ObjectOutputStream oos = new ObjectOutputStream(out);
-    oos.writeObject(trail);
-    oos.close();
-
-    final byte[] recovered = out.toByteArray();
-    final InputStream in = new ByteArrayInputStream(recovered);
-    final ObjectInputStream ois = new ObjectInputStream(in);
-    final Trail recoveredTrail = (Trail) ois.readObject();
-
-    assertEquals(trail, recoveredTrail);
-  }
-
   private Coordinates newCoordinates(
       final Double longitude, final Double latitude, final Double elevation) {
-    return new CoordinatesBuilder(longitude, latitude).elevation(elevation).build();
+    return new Coordinates(longitude, latitude, elevation);
   }
 
   private Waypoint newWaypoint(final Instant time, final Coordinates coordinates) {
-    return new WaypointBuilder(time, coordinates).build();
+    final GpsRecord record =
+        GpsRecord.of(
+            time,
+            coordinates.getLongitude(),
+            coordinates.getLatitude(),
+            coordinates.getElevation());
+    return new WaypointBuilder(record).build();
   }
 
   private Trail newTrail(final Set<Waypoint> points) {
@@ -354,5 +328,29 @@ public class TrailTest {
 
   private Trail newTrail(final Set<Waypoint> points, final Set<String> countries) {
     return new TrailBuilder(points).countries(countries).build();
+  }
+
+  private static final class Coordinates {
+    private final Double longitude;
+    private final Double latitude;
+    private final Double elevation;
+
+    Coordinates(final Double longitude, final Double latitude, final Double elevation) {
+      this.latitude = latitude;
+      this.longitude = longitude;
+      this.elevation = elevation;
+    }
+
+    public Double getLongitude() {
+      return longitude;
+    }
+
+    public Double getLatitude() {
+      return latitude;
+    }
+
+    public Double getElevation() {
+      return elevation;
+    }
   }
 }

@@ -16,7 +16,8 @@
 package ws.sosna.pinetrail.api.io;
 
 import java.nio.file.Path;
-import ws.sosna.pinetrail.model.Trail;
+import java.util.Set;
+import ws.sosna.pinetrail.model.GpsRecord;
 
 /** @author Xavier Sosnovsky */
 public class TestWriterProvider implements WriterProvider {
@@ -37,13 +38,8 @@ public class TestWriterProvider implements WriterProvider {
     }
 
     @Override
-    public void accept(Trail trail, Path location) {
+    public void accept(Set<GpsRecord> trail, Path location) {
       // do nothing
-    }
-
-    @Override
-    public Writer configure(final WriterSettings settings) {
-      return this;
     }
   }
 }

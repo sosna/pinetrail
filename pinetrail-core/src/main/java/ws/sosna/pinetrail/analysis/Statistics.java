@@ -13,34 +13,30 @@
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-package ws.sosna.pinetrail.model;
+package ws.sosna.pinetrail.analysis;
 
-import java.io.InvalidObjectException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.Objects;
 import java.util.Set;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
+import ws.sosna.pinetrail.model.Waypoint;
 
 /**
- * Base implementation of the Statistics interface.
+ * Provides statistics about the trail for a particular aspect, such as distance, elevation or
+ * speed.
  *
  * @author Xavier Sosnovsky
  */
-final class StatisticsImpl implements Statistics {
+public final class Statistics {
 
-  private static final long serialVersionUID = 3272647220016375249L;
   private final SummaryStatistics all;
   private final SummaryStatistics active;
   private final SummaryStatistics up;
   private final SummaryStatistics down;
   private final SummaryStatistics flat;
   private final Set<Waypoint> outliers;
-  private final transient int hash;
 
-  StatisticsImpl(
+  public Statistics(
       final SummaryStatistics all,
       final SummaryStatistics active,
       final SummaryStatistics up,
@@ -53,65 +49,48 @@ final class StatisticsImpl implements Statistics {
     this.down = down;
     this.flat = flat;
     this.outliers = Collections.unmodifiableSet(new LinkedHashSet<>(outliers));
-    this.hash = Objects.hash(all, active, up, down, flat, outliers);
   }
 
-  /** {@inheritDoc} */
-  @Override
+  /** Get the statistics for all the points in the trail. */
   public SummaryStatistics getAll() {
     return all;
   }
 
-  /** {@inheritDoc} */
-  @Override
+  /**
+   * Get the statistics for all the points in the trail where the person recording the trail was
+   * considered to be in movement.
+   */
   public SummaryStatistics getActive() {
     return active;
   }
 
-  /** {@inheritDoc} */
-  @Override
+  /**
+   * Get the statistics for all the points in the trail where the person recording the trail was
+   * considered to be going up.
+   */
   public SummaryStatistics getActiveUp() {
     return up;
   }
 
-  /** {@inheritDoc} */
-  @Override
+  /**
+   * Get the statistics for all the points in the trail where the person recording the trail was
+   * considered to be going down.
+   */
   public SummaryStatistics getActiveDown() {
     return down;
   }
 
-  /** {@inheritDoc} */
-  @Override
+  /**
+   * Get the statistics for all the points in the trail where the person recording the trail was
+   * considered to be going neither up nor down.
+   */
   public SummaryStatistics getActiveFlat() {
     return flat;
   }
 
-  /** {@inheritDoc} */
-  @Override
+  /** Get the points that could be considered outliers in the trail. */
   public Set<Waypoint> getOutliers() {
     return outliers;
-  }
-
-  @Override
-  public int hashCode() {
-    return hash;
-  }
-
-  @Override
-  public boolean equals(final Object obj) {
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    final StatisticsImpl other = (StatisticsImpl) obj;
-    return Objects.equals(this.outliers, other.outliers)
-        && Objects.equals(this.flat, other.flat)
-        && Objects.equals(this.down, other.down)
-        && Objects.equals(this.up, other.up)
-        && Objects.equals(this.active, other.active)
-        && Objects.equals(this.all, other.all);
   }
 
   @Override
@@ -130,37 +109,5 @@ final class StatisticsImpl implements Statistics {
         + ", outliers="
         + outliers
         + '}';
-  }
-
-  private Object writeReplace() {
-    return new SerializationProxy(this);
-  }
-
-  private void readObject(final ObjectInputStream stream) throws InvalidObjectException {
-    throw new InvalidObjectException("Proxy required");
-  }
-
-  private static final class SerializationProxy implements Serializable {
-    private static final long serialVersionUID = 3272647220016375249L;
-    private final SummaryStatistics all;
-    private final SummaryStatistics active;
-    private final SummaryStatistics up;
-    private final SummaryStatistics down;
-    private final SummaryStatistics flat;
-    private final Set<Waypoint> outliers;
-
-    SerializationProxy(final Statistics statistics) {
-      super();
-      all = statistics.getAll();
-      active = statistics.getActive();
-      up = statistics.getActiveUp();
-      down = statistics.getActiveDown();
-      flat = statistics.getActiveFlat();
-      outliers = statistics.getOutliers();
-    }
-
-    private Object readResolve() {
-      return new StatisticsImpl(all, active, up, down, flat, outliers);
-    }
   }
 }

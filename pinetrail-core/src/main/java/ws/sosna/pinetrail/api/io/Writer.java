@@ -16,8 +16,9 @@
 package ws.sosna.pinetrail.api.io;
 
 import java.nio.file.Path;
+import java.util.Set;
 import java.util.function.BiConsumer;
-import ws.sosna.pinetrail.model.Trail;
+import ws.sosna.pinetrail.model.GpsRecord;
 
 /**
  * Contract for services that write information about trails to a file.
@@ -29,27 +30,19 @@ import ws.sosna.pinetrail.model.Trail;
  * complete successfully using an {@code ExecutionError}.
  *
  * @author Xavier Sosnovsky
- * @see Trail
+ * @see GpsRecord
  * @see ws.sosna.pinetrail.utils.error.ExecutionError
  */
-public interface Writer extends BiConsumer<Trail, Path> {
-
-  /**
-   * Configure the writer with the supplied settings.
-   *
-   * @param settings the settings used to configure the writer
-   * @return the configured writer
-   */
-  Writer configure(final WriterSettings settings);
+public interface Writer extends BiConsumer<Set<GpsRecord>, Path> {
 
   /**
    * Writes the supplied trail to the supplied location.
    *
-   * @param trail the trail to be written
+   * @param trail the collection of GpsRecord to be written
    * @param location the location where the file will be written
    * @throws ws.sosna.pinetrail.utils.error.ExecutionError issue preventing the writing process to
    *     finish successfully.
    */
   @Override
-  void accept(final Trail trail, final Path location);
+  void accept(final Set<GpsRecord> trail, final Path location);
 }

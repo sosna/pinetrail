@@ -83,14 +83,16 @@ public class WaypointTest {
   public void getCoordinates() {
     final Coordinates coordinates = newCoordinates(8.789654, 40.6784356, 127.8);
     final Waypoint point = newWaypoint(Instant.MIN, coordinates);
-    assertEquals(coordinates, point.getCoordinates());
+    assertEquals(coordinates.getElevation(), point.getRecord().getElevation());
+    assertEquals(coordinates.getLatitude(), point.getRecord().getLatitude());
+    assertEquals(coordinates.getLongitude(), point.getRecord().getLongitude());
   }
 
   @Test
   public void getTime() {
     final Instant time = Instant.EPOCH;
     final Waypoint point = newWaypoint(time, newCoordinates(8.789654, 40.6784356, 127.8));
-    assertEquals(time, point.getTime());
+    assertEquals(time, point.getRecord().getTime());
   }
 
   @Test
@@ -112,10 +114,8 @@ public class WaypointTest {
     final Coordinates coordinates = newCoordinates(8.789654, 40.6784356, 127.8);
     final Waypoint point = newWaypoint(Instant.EPOCH, coordinates);
     assertEquals(
-        "Waypoint{time="
-            + Instant.EPOCH
-            + ", coordinates="
-            + coordinates.toString()
+        "Waypoint{record="
+            + point.getRecord().toString()
             + ", distance=null, elevationDifference=null, "
             + "grade=null, speed=null, isActive=true, timeDifference=0}",
         point.toString());
@@ -132,50 +132,28 @@ public class WaypointTest {
   }
 
   @Test(expected = ValidationException.class)
-  public void valCoordinatesNull() {
-    newWaypoint(Instant.MIN, null);
-  }
-
-  @Test(expected = ValidationException.class)
   public void valCoordinatesInvalid() {
     newWaypoint(Instant.MIN, newCoordinates(8.789654, null, 127.8));
   }
 
   @Test
   public void valOK() {
-    final Waypoint point = newWaypoint(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8));
+    final Waypoint point = newWaypoint(Instant.MIN, new Coordinates(8.789654, 45.987234, 127.8));
     final Set<ConstraintViolation<Waypoint>> constraintViolations = validator.validate(point);
     assertEquals(0, constraintViolations.size());
   }
 
   @Test
-  public void updateTime() {
-    final Waypoint original = newWaypoint(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8));
-    final Waypoint copy = WaypointBuilder.of(original).time(Instant.EPOCH).build();
-    assertNotEquals(original, copy);
-    assertEquals(Instant.EPOCH, copy.getTime());
-  }
-
-  @Test
-  public void updateCoordinates() {
-    final Waypoint original = newWaypoint(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8));
-    final Coordinates newCoordinates = newCoordinates(9.876, 42.567, 163.0);
-    final Waypoint copy = WaypointBuilder.of(original).coordinates(newCoordinates).build();
-    assertNotEquals(original, copy);
-    assertEquals(newCoordinates, copy.getCoordinates());
-  }
-
-  @Test
   public void distanceDefaultsToNull() {
-    final Waypoint point =
-        new WaypointBuilder(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8)).build();
+    final GpsRecord record = GpsRecord.of(Instant.MIN, 8.789654, 45.987234, 127.8);
+    final Waypoint point = new WaypointBuilder(record).build();
     assertNull(point.getDistance());
   }
 
   @Test
   public void getDistance() {
     final Waypoint point =
-        new WaypointBuilder(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8))
+        new WaypointBuilder(GpsRecord.of(Instant.MIN, 8.789654, 45.987234, 127.8))
             .distance(10.5)
             .build();
     assertEquals(10.5, point.getDistance(), 0.0);
@@ -183,7 +161,7 @@ public class WaypointTest {
 
   @Test(expected = ValidationException.class)
   public void valDistancePositive() {
-    new WaypointBuilder(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8))
+    new WaypointBuilder(GpsRecord.of(Instant.MIN, 8.789654, 45.987234, 127.8))
         .distance(-10.0)
         .build();
   }
@@ -191,14 +169,14 @@ public class WaypointTest {
   @Test
   public void eleDiffDefaultsToNull() {
     final Waypoint point =
-        new WaypointBuilder(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8)).build();
+        new WaypointBuilder(GpsRecord.of(Instant.MIN, 8.789654, 45.987234, 127.8)).build();
     assertNull(point.getElevationDifference());
   }
 
   @Test
   public void getEleDiff() {
     final Waypoint point =
-        new WaypointBuilder(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8))
+        new WaypointBuilder(GpsRecord.of(Instant.MIN, 8.789654, 45.987234, 127.8))
             .elevationDifference(10.5)
             .build();
     assertEquals(10.5, point.getElevationDifference(), 0.0);
@@ -206,14 +184,14 @@ public class WaypointTest {
 
   @Test(expected = ValidationException.class)
   public void valEleDiffAboveMin() {
-    new WaypointBuilder(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8))
+    new WaypointBuilder(GpsRecord.of(Instant.MIN, 8.789654, 45.987234, 127.8))
         .elevationDifference(-9450.1)
         .build();
   }
 
   @Test(expected = ValidationException.class)
   public void valEleDiffBelowMax() {
-    new WaypointBuilder(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8))
+    new WaypointBuilder(GpsRecord.of(Instant.MIN, 8.789654, 45.987234, 127.8))
         .elevationDifference(9450.1)
         .build();
   }
@@ -221,14 +199,14 @@ public class WaypointTest {
   @Test
   public void speedDefaultsToNull() {
     final Waypoint point =
-        new WaypointBuilder(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8)).build();
+        new WaypointBuilder(GpsRecord.of(Instant.MIN, 8.789654, 45.987234, 127.8)).build();
     assertNull(point.getSpeed());
   }
 
   @Test
   public void getSpeed() {
     final Waypoint point =
-        new WaypointBuilder(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8))
+        new WaypointBuilder(GpsRecord.of(Instant.MIN, 8.789654, 45.987234, 127.8))
             .speed(4.75)
             .build();
     assertEquals(4.75, point.getSpeed(), 0.0);
@@ -236,7 +214,7 @@ public class WaypointTest {
 
   @Test(expected = ValidationException.class)
   public void valSpeedPositive() {
-    new WaypointBuilder(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8))
+    new WaypointBuilder(GpsRecord.of(Instant.MIN, 8.789654, 45.987234, 127.8))
         .speed(-10.0)
         .build();
   }
@@ -244,14 +222,14 @@ public class WaypointTest {
   @Test
   public void isActiveDefaultsToTrue() {
     final Waypoint point =
-        new WaypointBuilder(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8)).build();
+        new WaypointBuilder(GpsRecord.of(Instant.MIN, 8.789654, 45.987234, 127.8)).build();
     assertTrue(point.isActive());
   }
 
   @Test
   public void getIsActive() {
     final Waypoint point =
-        new WaypointBuilder(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8))
+        new WaypointBuilder(GpsRecord.of(Instant.MIN, 8.789654, 45.987234, 127.8))
             .isActive(false)
             .build();
     assertFalse(point.isActive());
@@ -260,7 +238,7 @@ public class WaypointTest {
   @Test
   public void getGrade() {
     final Waypoint point =
-        new WaypointBuilder(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8))
+        new WaypointBuilder(GpsRecord.of(Instant.MIN, 8.789654, 45.987234, 127.8))
             .grade(3.5)
             .build();
     assertEquals(3.5, point.getGrade(), 0.0);
@@ -269,20 +247,20 @@ public class WaypointTest {
   @Test
   public void gradeDefaultsToNull() {
     final Waypoint point =
-        new WaypointBuilder(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8)).build();
+        new WaypointBuilder(GpsRecord.of(Instant.MIN, 8.789654, 45.987234, 127.8)).build();
     assertNull(point.getGrade());
   }
 
   @Test(expected = ValidationException.class)
   public void valMinGrade() {
-    new WaypointBuilder(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8))
+    new WaypointBuilder(GpsRecord.of(Instant.MIN, 8.789654, 45.987234, 127.8))
         .grade(-90.1)
         .build();
   }
 
   @Test(expected = ValidationException.class)
   public void valMaxGrade() {
-    new WaypointBuilder(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8))
+    new WaypointBuilder(GpsRecord.of(Instant.MIN, 8.789654, 45.987234, 127.8))
         .grade(90.1)
         .build();
   }
@@ -290,7 +268,7 @@ public class WaypointTest {
   @Test
   public void valOKGrade() {
     final Waypoint point =
-        new WaypointBuilder(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8))
+        new WaypointBuilder(GpsRecord.of(Instant.MIN, 8.789654, 45.987234, 127.8))
             .grade(45.0)
             .build();
     final Set<ConstraintViolation<Waypoint>> constraintViolations = validator.validate(point);
@@ -300,7 +278,7 @@ public class WaypointTest {
   @Test
   public void getTimeDifference() {
     final Waypoint point =
-        new WaypointBuilder(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8))
+        new WaypointBuilder(GpsRecord.of(Instant.MIN, 8.789654, 45.987234, 127.8))
             .timeDifference(10)
             .build();
     assertEquals(10, point.getTimeDifference(), 0.0);
@@ -308,42 +286,47 @@ public class WaypointTest {
 
   @Test(expected = ValidationException.class)
   public void valMinTimeDifference() {
-    new WaypointBuilder(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8))
+    new WaypointBuilder(GpsRecord.of(Instant.MIN, 8.789654, 45.987234, 127.8))
         .timeDifference(-1)
         .build();
   }
 
-  @Test
-  public void serialize() throws IOException, ClassNotFoundException {
-    final Waypoint point =
-        new WaypointBuilder(Instant.MIN, newCoordinates(8.789654, 45.987234, 127.8))
-            .timeDifference(10)
-            .grade(45.0)
-            .isActive(false)
-            .speed(10.0)
-            .elevationDifference(10.5)
-            .distance(10.5)
-            .build();
-
-    final ByteArrayOutputStream out = new ByteArrayOutputStream();
-    final ObjectOutputStream oos = new ObjectOutputStream(out);
-    oos.writeObject(point);
-    oos.close();
-
-    final byte[] recovered = out.toByteArray();
-    final InputStream in = new ByteArrayInputStream(recovered);
-    final ObjectInputStream ois = new ObjectInputStream(in);
-    final Waypoint recoveredPoint = (Waypoint) ois.readObject();
-
-    assertEquals(point, recoveredPoint);
-  }
-
   private Coordinates newCoordinates(
       final Double longitude, final Double latitude, final Double elevation) {
-    return new CoordinatesBuilder(longitude, latitude).elevation(elevation).build();
+    return new Coordinates(longitude, latitude, elevation);
   }
 
   private Waypoint newWaypoint(final Instant time, final Coordinates coordinates) {
-    return new WaypointBuilder(time, coordinates).build();
+    final GpsRecord record =
+        GpsRecord.of(
+            time,
+            coordinates.getLongitude(),
+            coordinates.getLatitude(),
+            coordinates.getElevation());
+    return new WaypointBuilder(record).build();
+  }
+
+  private static final class Coordinates {
+    private final Double longitude;
+    private final Double latitude;
+    private final Double elevation;
+
+    Coordinates(final Double longitude, final Double latitude, final Double elevation) {
+      this.latitude = latitude;
+      this.longitude = longitude;
+      this.elevation = elevation;
+    }
+
+    public Double getLongitude() {
+      return longitude;
+    }
+
+    public Double getLatitude() {
+      return latitude;
+    }
+
+    public Double getElevation() {
+      return elevation;
+    }
   }
 }
